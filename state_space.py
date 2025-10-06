@@ -1,136 +1,104 @@
 import pymc as pm
-import numpy as np
 import aesara.tensor as at
+import numpy as np
 import arviz as az
 
-
-class DynamicTeamModel:
+class DynamicRoleModel:
     """
-    Bayesian state-space model for dynamic player-to-team strength mapping.
-    Supports AR(1) latent player strengths, optional covariates, and role weights.
+    Bayesian dynamic state-space model for evolving player abilities and role impacts.
     """
 
-    def __init__(self, y, L, t_idx, X=None, role_of_player=None, coords=None):
-        """
-        Parameters
-        ----------
-        y : array (M,)
-            Observed binary match outcomes (1 = team_i win)
-        L : array (M, P)
-            Lineup-difference matrix: +w for team_i's players, -w for team_j's players
-        t_idx : array (M,)
-            Integer index of which time step each match belongs to
-        X : array (M, K), optional
-            Match covariates (maps, sides, etc.). Default = None.
-        role_of_player : array (P,), optional
-            Role index per player (if modeling per-role weights). Default = None.
-        coords : dict, optional
-            Named coordinate structure for nicer ArviZ output
-        """
+    def __init__(self, b_obs, L_rows, y, X=None, t_of_match=None, role_of_player=None):
+        self.b_obs = np.asarray(b_obs)
+        self.L_rows = np.asarray(L_rows)
         self.y = np.asarray(y)
-        self.L = np.asarray(L)
-        self.t_idx = np.asarray(t_idx)
         self.X = np.asarray(X) if X is not None else np.zeros((len(y), 0))
-        self.role_of_player = role_of_player
-        self.coords = coords or {}
+        self.t_of_match = np.asarray(t_of_match) if t_of_match is not None else np.zeros(len(y), dtype=int)
+        self.role_of_player = np.asarray(role_of_player) if role_of_player is not None else np.zeros(self.b_obs.shape[1], dtype=int)
         self.model = None
         self.idata = None
 
     def build_model(self):
-        """Define the PyMC model."""
-        y, L, t_idx, X, role_of_player = self.y, self.L, self.t_idx, self.X, self.role_of_player
-        P = L.shape[1]
-        T = int(t_idx.max()) + 1
-        K = X.shape[1]
+        T, P = self.b_obs.shape
+        M, K = self.X.shape
+        R = len(np.unique(self.role_of_player))
 
-        coords = self.coords.copy()
-        coords.update({
-            "match": np.arange(len(y)),
-            "player": np.arange(P),
-            "time": np.arange(T),
-        })
-        if K > 0:
-            coords["cov"] = np.arange(K)
-        if role_of_player is not None:
-            coords["role"] = np.unique(role_of_player)
+        with pm.Model() as model:
+            # --- Global priors ---
+            alpha = pm.Normal("alpha", 0, 2)
+            beta = pm.Normal("beta", 0, 1, shape=K) if K > 0 else at.zeros((0,))
 
-        with pm.Model(coords=coords) as model:
-            # ----- Priors -----
-            alpha = pm.Normal("alpha", 0.0, 2.0)
-            if K > 0:
-                beta = pm.Normal("beta", 0.0, 1.0, dims="cov")
-            else:
-                beta = pm.Deterministic("beta", at.zeros((0,)))
+            # --- AR(1) parameters for ability and weight ---
+            phi_b = pm.Beta("phi_b", 9, 1)           # persistence ~ 0.9 mean
+            phi_w = pm.Beta("phi_w", 9, 1)
+            sigma_b = pm.HalfNormal("sigma_b", 0.5)
+            sigma_w = pm.HalfNormal("sigma_w", 0.5)
+            sigma_obs = pm.HalfNormal("sigma_obs", 0.3)
+            # --- Role baseline impacts ---
+            r_role = pm.Normal("r_role", 1.0, 0.3, shape=R)
 
-            # AR(1) player dynamics
-            sigma0 = pm.HalfNormal("sigma0", 1.0)
-            sigma_b = pm.HalfNormal("sigma_b", 0.3)
-            phi_raw = pm.Normal("phi_raw", 0.0, 0.5)
-            phi = pm.Deterministic("phi", pm.math.tanh(phi_raw))
+            # --- Latent initial states ---
+            b0 = pm.Normal("b0", 0, 1, shape=P)
+            w0 = pm.Normal("w0", mu=r_role[self.role_of_player], sigma=0.3, shape=P)
 
-            b0 = pm.Normal("b_1", 0.0, sigma0, shape=(1, P), dims=("time", "player"))
-            b_list = [b0]
+            # --- Latent evolution ---
+            b_true = at.zeros((T, P))
+            w_true = at.zeros((T, P))
+            b_true = b_true.at[0, :].set(b0)
+            w_true = w_true.at[0, :].set(w0)
+
             for t in range(1, T):
-                bt = pm.Normal(f"b_{t+1}", mu=phi * b_list[-1],
-                               sigma=sigma_b, shape=(1, P), dims=("time", "player"))
-                b_list.append(bt)
-            B = at.concatenate(b_list, axis=0)  # (T, P)
+                eps_b = pm.Normal(f"eps_b_{t}", 0, sigma_b, shape=P)
+                eps_w = pm.Normal(f"eps_w_{t}", 0, sigma_w, shape=P)
+                b_true = b_true.at[t, :].set(phi_b * b_true[t-1, :] + eps_b)
+                w_true = w_true.at[t, :].set(phi_w * w_true[t-1, :] + eps_w)
+            # --- Measurement model linking observed player scores ---
+            
+            # Create mask for observed (non-NaN) scores
+            obs_mask = ~np.isnan(self.b_obs)
+            
+            # Flatten arrays and apply mask
+            b_true_flat = b_true.flatten()
+            b_obs_flat = self.b_obs.flatten()
+            obs_idx = np.where(obs_mask.flatten())[0]
+            
+            # Only model observed scores
+            pm.Normal(
+                "b_obs",
+                mu=b_true_flat[obs_idx],
+                sigma=sigma_obs,
+                observed=b_obs_flat[obs_idx],
+            )
+            # --- Observation (match outcomes) ---
+            B_for_matches = b_true[self.t_of_match, :]
+            W_for_matches = w_true[self.t_of_match, :]
+            s_diff = at.sum(self.L_rows * W_for_matches * B_for_matches, axis=1)
+            eta = alpha + (self.X @ beta if K > 0 else 0) + s_diff
 
-            # Role weighting (optional)
-            if role_of_player is not None:
-                R = int(np.max(role_of_player)) + 1
-                w_role = pm.Normal("w_role", 1.0, 0.3, dims="role")
-                W_per_player = w_role[role_of_player]
-            else:
-                W_per_player = at.ones((P,))
-
-            # Weighted lineup differences
-            L_weighted = L * W_per_player
-            B_for_matches = B[t_idx, :]  # select correct time for each match
-            s_diff = at.sum(L_weighted * B_for_matches, axis=1)
-
-            xb = alpha + (at.dot(X, beta) if K > 0 else 0)
-            eta = xb + s_diff
-
-            # ----- Likelihood -----
-            pm.Bernoulli("y", logit_p=eta, observed=y, dims="match")
-
-            # ----- Deterministics -----
-            pm.Deterministic("p_win", pm.math.sigmoid(eta), dims="match")
+            pm.Bernoulli("y", logit_p=eta, observed=self.y)
+            pm.Deterministic("p_win", pm.math.sigmoid(eta))
 
         self.model = model
         return model
 
-    def fit(self, draws=1000, tune=1000, target_accept=0.9, random_seed=42, **kwargs):
-        """Fit the model via MCMC."""
+    def fit(self, draws=1000, tune=1000, target_accept=0.9, seed=42):
         if self.model is None:
             self.build_model()
         with self.model:
-            self.idata = pm.sample(
-                draws=draws,
-                tune=tune,
-                target_accept=target_accept,
-                random_seed=random_seed,
-                **kwargs
-            )
+            self.idata = pm.sample(draws=draws, tune=tune,
+                                   target_accept=target_accept,
+                                   random_seed=seed)
         return self.idata
 
-    def posterior_summary(self, var_names=None):
-        """Return ArviZ summary of posterior samples."""
+    def summary(self, var_names=None):
         if self.idata is None:
-            raise RuntimeError("Model not yet fitted. Call .fit() first.")
-        return az.summary(self.idata, var_names=var_names)
+            raise ValueError("Run .fit() first.")
+        return az.summary(self.idata, var_names=var_names or
+                          ["phi_b", "phi_w", "sigma_b", "sigma_w", "alpha"])
 
-    def predict(self, L_new, X_new=None, t_idx_new=None):
-        """Predict new match outcomes given new design matrices."""
+    def predict(self):
         if self.idata is None:
-            raise RuntimeError("Fit model first using .fit().")
-
-        X_new = np.asarray(X_new) if X_new is not None else np.zeros((len(L_new), 0))
-        L_new = np.asarray(L_new)
-        t_idx_new = np.asarray(t_idx_new) if t_idx_new is not None else np.zeros(len(L_new), int)
-
+            raise ValueError("Run .fit() first.")
         with self.model:
-            pm.set_data({"L": L_new, "X": X_new, "t_idx": t_idx_new})
-            post_pred = pm.sample_posterior_predictive(self.idata, extend_inferencedata=False)
-        return post_pred["y"]
+            ppc = pm.sample_posterior_predictive(self.idata, random_seed=42)
+        return ppc

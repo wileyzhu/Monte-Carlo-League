@@ -1,9 +1,7 @@
 import numpy as np
 import random
-
-
-
 from playin import Playin
+
 class SwissTournament:
     def __init__(self, teams, seed_groups, team_regions, win_probs, best_of=1):
         """
@@ -83,9 +81,11 @@ class SwissTournament:
         available_mid = [t for t in mid]
         last_mid = available_mid[-1]
         second_last_mid = available_mid[-2]
-        
+
         while team_regions.get(last_mid, 'UNKNOWN') == team_regions.get(second_last_mid, 'UNKNOWN'):
             random.shuffle(available_mid)
+            last_mid = available_mid[-1]
+            second_last_mid = available_mid[-2]
 
         while len(available_mid) >= 2:
             team1 = available_mid.pop(0)
