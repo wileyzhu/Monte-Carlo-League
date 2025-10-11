@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 import data_preprocessing
+import state_space
 
 # Import dependencies with availability checks
 try:
@@ -126,11 +127,143 @@ def add_predictions(df, models):
     
     return df
 
+def generate_team_performance_scores(df):
+    """Generate team performance scores using individual player predictions"""
+    print("Generating team performance scores...")
+    
+    # Group by game and team to calculate team scores
+    team_scores = []
+    
+    for game_id in df['Game_ID'].unique():
+        game_data = df[df['Game_ID'] == game_id]
+        
+        # Get blue and red team names
+        blue_team = game_data['Blue_Team'].iloc[0]
+        red_team = game_data['Red_Team'].iloc[0]
+        winning_team = game_data['Winning_Team'].iloc[0]
+        
+        # In LoL, each game has exactly 10 players (5 per team)
+        # We need to split them into blue and red teams
+        # Assuming the first 5 players are blue team, next 5 are red team
+        # Or we can use the Win column to determine team affiliation
+        
+        # Method: Use Win column - players with Win=1 are on winning team
+        if len(game_data) == 10:  # Standard 5v5 match
+            # Split players by their win status and team affiliation
+            # Players on winning team have Win=1, losing team has Win=0
+            winning_players = game_data[game_data['Win'] == 1]
+            losing_players = game_data[game_data['Win'] == 0]
+            
+            # Determine which team won
+            if winning_team == blue_team:
+                blue_players = winning_players
+                red_players = losing_players
+            else:
+                blue_players = losing_players
+                red_players = winning_players
+            
+            # Sum individual player predictions for each team
+            blue_score = blue_players['prediction'].sum()
+            red_score = red_players['prediction'].sum()
+            
+            # Normalize scores to probabilities
+            total_score = blue_score + red_score
+            if total_score > 0:
+                blue_prob = blue_score / total_score
+                red_prob = red_score / total_score
+            else:
+                blue_prob = red_prob = 0.5
+            
+            team_scores.append({
+                'Game_ID': game_id,
+                'Blue_Team': blue_team,
+                'Red_Team': red_team,
+                'Blue_Score': blue_score,
+                'Red_Score': red_score,
+                'Blue_Win_Probability': blue_prob,
+                'Red_Win_Probability': red_prob,
+                'Actual_Winner': winning_team,
+                'Blue_Players': len(blue_players),
+                'Red_Players': len(red_players)
+            })
+        else:
+            print(f"Warning: Game {game_id} has {len(game_data)} players (expected 10)")
+    
+    team_df = pd.DataFrame(team_scores)
+    return team_df
+
+
+
+def run_autoregressive_model(df_with_predictions, worlds_teams):
+    """Run the autoregressive model on team performance data"""
+    print("Running autoregressive team performance model...")
+    
+    # Create and fit the autoregressive model
+    ar_model = state_space.TeamAutoregressiveModel(worlds_teams=worlds_teams)
+    
+    # Prepare team-level data from individual player predictions
+    team_data = ar_model.prepare_team_data(df_with_predictions)
+    print(f"Prepared team data: {len(team_data)} team-game records")
+    
+    # Fit autoregressive models for each team
+    ar_model.fit()
+    
+    # Get model summary
+    summary = ar_model.get_team_summary()
+    print("\nAutoregressive Model Summary:")
+    print(summary[['Team', 'Games_Played', 'Avg_Performance', 'Performance_Std']].head(10))
+    
+    # Test predictions for a few team matchups
+    print("\nSample team matchup predictions:")
+    teams = summary['Team'].tolist()[:6]  # Get first 6 teams
+    
+    comparison = set()  # use a set of frozensets for fast duplicate checking
+
+    for i in range(len(teams)):
+        for j in range(i + 1, len(teams)):
+            pair = frozenset([teams[i], teams[j]])  # unordered, so {A,B} == {B,A}
+
+            if pair not in comparison:
+                team1, team2 = teams[i], teams[j]
+                comparison.add(pair)  # remember we already predicted this pair
+
+                prediction = ar_model.predict_match_outcome(team1, team2)
+                print(f"  {team1} vs {team2}: "
+                    f"{prediction['team1_win_probability']:.3f} - "
+                    f"{prediction['team2_win_probability']:.3f}")
+                    
+    return ar_model, summary
+
+def filter_worlds_teams(df, worlds_teams):
+    """Filter dataset to only include Worlds teams"""
+    # Define Worlds teams from swiss_stage.py
+    
+    print(f"Filtering for Worlds teams...")
+    print(f"Original dataset shape: {df.shape}")
+    
+    # Filter for matches involving Worlds teams
+    worlds_mask = (df['Blue_Team'].isin(worlds_teams)) | (df['Red_Team'].isin(worlds_teams))
+    df_worlds = df[worlds_mask].copy()
+    
+    print(f"Worlds dataset shape: {df_worlds.shape}")
+    print(f"Unique teams in Worlds data: {sorted(set(df_worlds['Blue_Team'].unique()) | set(df_worlds['Red_Team'].unique()))}")
+    
+    return df_worlds
+
 def main():
     """Main pipeline: load data, preprocess, load models, and generate predictions"""
     # Load and combine datasets
     print("Loading datasets...")
     df = load_datasets()
+    worlds_teams = [
+        'Bilibili Gaming', 'Gen.G eSports', 'G2 Esports', 'FlyQuest', 
+        'CTBC Flying Oyster', 'Anyone s Legend', 'Hanwha Life eSports', 
+        'Movistar KOI', 'Vivo Keyd Stars', 'Team Secret Whales', 
+        'Top Esports', 'Invictus Gaming', 'KT Rolster', 'Fnatic', 
+        '100 Thieves', 'PSG Talon', 'T1'
+    ]
+    # Filter for Worlds teams only
+    df = filter_worlds_teams(df, worlds_teams)
     
     # Apply feature engineering
     print("\nPreprocessing data...")
@@ -146,20 +279,71 @@ def main():
     print("\nMaking predictions...")
     df_with_predictions = add_predictions(df_processed, models)
     
+    # Create overall prediction column (take the non-NaN prediction for each player)
+    pred_cols = [col for col in df_with_predictions.columns if 'prediction' in col]
+    df_with_predictions['prediction'] = df_with_predictions[pred_cols].sum(axis=1, skipna=True)
+    
+    # Generate team performance scores
+    print("\nGenerating team performance scores...")
+    team_scores = generate_team_performance_scores(df_with_predictions)
+    
     # Save results
     print("\nSaving results...")
     output_path = "dataset/matches_with_predictions.csv"
     df_with_predictions.to_csv(output_path, index=False)
-    print(f"Saved results to {output_path}")
+    print(f"Saved player predictions to {output_path}")
+    
+    team_output_path = "dataset/team_performance_scores.csv"
+    team_scores.to_csv(team_output_path, index=False)
+    print(f"Saved team performance scores to {team_output_path}")
     
     # Display summary
     print(f"\nFinal dataset shape: {df_with_predictions.shape}")
-    pred_cols = [col for col in df_with_predictions.columns if 'prediction' in col]
+    print(f"Team scores shape: {team_scores.shape}")
+    
     if pred_cols:
-        print(f"\nPrediction summary:")
+        print(f"\nPlayer prediction summary:")
         print(df_with_predictions[pred_cols].describe())
     
-    return df_with_predictions
+    print(f"\nTeam performance summary:")
+    print(team_scores[['Blue_Score', 'Red_Score', 'Blue_Win_Probability', 'Red_Win_Probability']].describe())
+    
+    # Calculate prediction accuracy
+    team_scores['Predicted_Winner'] = team_scores.apply(
+        lambda row: row['Blue_Team'] if row['Blue_Win_Probability'] > 0.5 else row['Red_Team'], axis=1
+    )
+    accuracy = (team_scores['Predicted_Winner'] == team_scores['Actual_Winner']).mean()
+    print(f"\nTeam prediction accuracy: {accuracy:.3f}")
+    
+    # Run autoregressive model
+    print("\n" + "="*50)
+    print("RUNNING AUTOREGRESSIVE TEAM PERFORMANCE MODEL")
+    print("="*50)
+    
+    try:
+        ar_model, ar_summary = run_autoregressive_model(df_with_predictions, worlds_teams=worlds_teams)
+        print("\nAutoregressive model completed successfully!")
+        
+        # Save autoregressive results
+        ar_output = "dataset/autoregressive_results.csv"
+        ar_summary.to_csv(ar_output, index=False)
+        print(f"Saved autoregressive model summary to {ar_output}")
+        
+        return df_with_predictions, team_scores, ar_model, ar_summary
+        
+    except Exception as e:
+        print(f"Error running autoregressive model: {e}")
+        print("Continuing without autoregressive model...")
+        return df_with_predictions, team_scores, None, None
 
 if __name__ == "__main__":
-    df_final = main()
+    results = main()
+    if len(results) == 4:
+        df_final, team_scores, ar_model, ar_summary = results
+        print(f"\nCompleted with autoregressive model: {ar_model is not None}")
+        if ar_model is not None:
+            print(f"Fitted models for {len(ar_model.team_models)} teams")
+    else:
+        df_final, team_scores = results
+        print("\nCompleted without autoregressive model")
+
