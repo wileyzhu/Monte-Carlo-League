@@ -1,0 +1,156 @@
+{
+  "playin_winner": "T1",
+  "playin_loser": "Invictus Gaming",
+  "swiss_teams": [
+    "Bilibili Gaming",
+    "Gen.G eSports",
+    "G2 Esports",
+    "FlyQuest",
+    "CTBC Flying Oyster",
+    "Anyone s Legend",
+    "Hanwha Life eSports",
+    "Movistar KOI",
+    "Vivo Keyd Stars",
+    "Team Secret Whales",
+    "KT Rolster",
+    "T1",
+    "Top Esports",
+    "Fnatic",
+    "100 Thieves",
+    "PSG Talon"
+  ],
+  "swiss_qualified": [
+    "Bilibili Gaming",
+    "Gen.G eSports",
+    "Anyone s Legend",
+    "Hanwha Life eSports",
+    "Team Secret Whales",
+    "KT Rolster",
+    "T1",
+    "Top Esports"
+  ],
+  "swiss_eliminated": [
+    "G2 Esports",
+    "FlyQuest",
+    "CTBC Flying Oyster",
+    "Movistar KOI",
+    "Vivo Keyd Stars",
+    "Fnatic",
+    "100 Thieves",
+    "PSG Talon"
+  ],
+  "swiss_records": {
+    "Bilibili Gaming": [
+      3,
+      0
+    ],
+    "Gen.G eSports": [
+      3,
+      2
+    ],
+    "G2 Esports": [
+      2,
+      3
+    ],
+    "FlyQuest": [
+      0,
+      3
+    ],
+    "CTBC Flying Oyster": [
+      1,
+      3
+    ],
+    "Anyone s Legend": [
+      3,
+      2
+    ],
+    "Hanwha Life eSports": [
+      3,
+      0
+    ],
+    "Movistar KOI": [
+      1,
+      3
+    ],
+    "Vivo Keyd Stars": [
+      1,
+      3
+    ],
+    "Team Secret Whales": [
+      3,
+      2
+    ],
+    "KT Rolster": [
+      3,
+      1
+    ],
+    "T1": [
+      3,
+      1
+    ],
+    "Top Esports": [
+      3,
+      1
+    ],
+    "Fnatic": [
+      2,
+      3
+    ],
+    "100 Thieves": [
+      2,
+      3
+    ],
+    "PSG Talon": [
+      0,
+      3
+    ]
+  },
+  "elimination_results": {
+    "quarterfinals": [
+      {
+        "match": [
+          "Bilibili Gaming",
+          "Team Secret Whales"
+        ],
+        "winner": "Bilibili Gaming"
+      },
+      {
+        "match": [
+          "Hanwha Life eSports",
+          "Gen.G eSports"
+        ],
+        "winner": "Hanwha Life eSports"
+      },
+      {
+        "match": [
+          "T1",
+          "Anyone s Legend"
+        ],
+        "winner": "T1"
+      },
+      {
+        "match": [
+          "Top Esports",
+          "KT Rolster"
+        ],
+        "winner": "Top Esports"
+      }
+    ],
+    "semifinals": [
+      [
+        "Bilibili Gaming",
+        "T1"
+      ],
+      [
+        "Hanwha Life eSports",
+        "Top Esports"
+      ]
+    ],
+    "finals": [
+      "T1",
+      "Top Esports"
+    ],
+    "champion": "T1"
+  },
+  "champion": "T1"
+}

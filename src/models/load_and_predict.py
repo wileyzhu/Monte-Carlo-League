@@ -215,10 +215,10 @@ def run_autoregressive_model(df_with_predictions, worlds_teams):
     
     # Test predictions for a few team matchups
     print("\nSample team matchup predictions:")
-    teams = summary['Team'].tolist()[:6]  # Get first 6 teams
+    teams = summary['Team'].tolist()  # Get first 6 teams
     
     comparison = set()  # use a set of frozensets for fast duplicate checking
-
+    predictions = []
     for i in range(len(teams)):
         for j in range(i + 1, len(teams)):
             pair = frozenset([teams[i], teams[j]])  # unordered, so {A,B} == {B,A}
@@ -228,10 +228,21 @@ def run_autoregressive_model(df_with_predictions, worlds_teams):
                 comparison.add(pair)  # remember we already predicted this pair
 
                 prediction = ar_model.predict_match_outcome(team1, team2)
+
+                predictions.append({
+                    'team1': team1,
+                    'team2': team2,
+                    'team1_win_probability': prediction['team1_win_probability'],
+                    'team2_win_probability': prediction['team2_win_probability']
+                })
+
                 print(f"  {team1} vs {team2}: "
                     f"{prediction['team1_win_probability']:.3f} - "
                     f"{prediction['team2_win_probability']:.3f}")
-                    
+
+    predictions = pd.DataFrame(predictions)               
+    predictions.to_csv("predictions.csv", index=False)
+
     return ar_model, summary
 
 def filter_worlds_teams(df, worlds_teams):

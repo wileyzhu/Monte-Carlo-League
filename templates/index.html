@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worlds 2025 Tournament Simulator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container-fluid">
+        <!-- Header -->
+        <header class="row bg-dark text-white py-3 mb-4">
+            <div class="col">
+                <h1 class="text-center">
+                    <i class="fas fa-trophy text-warning"></i>
+                    Worlds 2025 Tournament Simulator
+                </h1>
+                <p class="text-center mb-0">
+                    <small>Powered by Bayesian AR(3) Models & MSI 2025 Regional Strengths</small>
+                </p>
+            </div>
+        </header>
+
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5><i class="fas fa-cogs"></i> Simulation Controls</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Simulation Type -->
+                        <div class="mb-3">
+                            <label class="form-label">Simulation Type</label>
+                            <select class="form-select" id="simulationType">
+                                <option value="single">Single Tournament</option>
+                                <option value="multiple">Multiple Simulations</option>
+                            </select>
+                        </div>
+
+                        <!-- Number of Simulations -->
+                        <div class="mb-3" id="numSimulationsDiv" style="display: none;">
+                            <label for="numSimulations" class="form-label">Number of Simulations</label>
+                            <input type="number" class="form-control" id="numSimulations" value="100" min="1"
+                                max="1000">
+                            <small class="text-muted">Max: 1000 simulations</small>
+                        </div>
+
+                        <!-- Run Button -->
+                        <button class="btn btn-success w-100" id="runSimulation">
+                            <i class="fas fa-play"></i> Run Simulation
+                        </button>
+
+                        <!-- Loading Spinner -->
+                        <div class="text-center mt-3" id="loadingSpinner" style="display: none;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Running simulation...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Regional Strengths -->
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5><i class="fas fa-globe"></i> Regional Strengths</h5>
+                        <small>Based on MSI 2025 + EWC 2025 Combined Performance</small>
+                    </div>
+                    <div class="card-body" id="regionalStrengths">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Team Power Rankings -->
+                <div class="card mt-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5><i class="fas fa-list-ol"></i> Team Power Rankings</h5>
+                        <small>Based on Bayesian AR(3) Model + MSI 2025 Regional Adjustments</small>
+                    </div>
+                    <div class="card-body" id="teamRankings">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                    <div class="card-footer bg-light">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Note:</strong> Power rankings show individual team strength (head-to-head win probability). 
+                            Tournament simulation results may differ due to seeding, bracket positioning, format effects, and draw luck. 
+                            A lower-ranked team can have higher championship probability through better tournament paths.
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <!-- Results Area -->
+                <div id="resultsArea">
+                    <div class="card">
+                        <div class="card-body text-center py-5">
+                            <i class="fas fa-trophy fa-4x text-muted mb-3"></i>
+                            <h3 class="text-muted">Welcome to Worlds 2025 Simulator</h3>
+                            <p class="text-muted">
+                                Select a simulation type and click "Run Simulation" to see tournament predictions
+                                based on MSI 2025 performance data and advanced statistical modeling.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Single Tournament Results -->
+                <div id="singleResults" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header bg-warning text-dark">
+                                    <h5><i class="fas fa-crown"></i> Tournament Champion</h5>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h2 id="championName" class="text-primary"></h2>
+                                    <p id="championRegion" class="text-muted"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header bg-secondary text-white">
+                                    <h5><i class="fas fa-users"></i> Play-In Result</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Winner:</strong> <span id="playinWinner"></span></p>
+                                    <p><strong>Eliminated:</strong> <span id="playinLoser"></span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-success text-white">
+                                    <h5><i class="fas fa-check"></i> Swiss Qualified</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul id="swissQualified" class="list-unstyled"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-danger text-white">
+                                    <h5><i class="fas fa-times"></i> Swiss Eliminated</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul id="swissEliminated" class="list-unstyled"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Elimination Bracket -->
+                    <div class="card mt-4">
+                        <div class="card-header bg-info text-white">
+                            <h5><i class="fas fa-sitemap"></i> Elimination Bracket</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="elimination-bracket">
+                                <!-- Hierarchical bracket will be rendered here by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Multiple Simulations Results -->
+                <div id="multipleResults" style="display: none;">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5><i class="fas fa-chart-bar"></i> Championship Probabilities</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="championshipChart" class="text-center">
+                                <!-- Chart will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header bg-info text-white">
+                                    <h5><i class="fas fa-list-ol"></i> Top Championship Contenders</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Rank</th>
+                                                    <th>Team</th>
+                                                    <th>Championships</th>
+                                                    <th>Probability</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="championStatsTable">
+                                                <!-- Will be populated by JavaScript -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header bg-warning text-dark">
+                                    <h5><i class="fas fa-globe-americas"></i> Regional Distribution</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="regionalDistribution">
+                                        <!-- Will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+
+</html>

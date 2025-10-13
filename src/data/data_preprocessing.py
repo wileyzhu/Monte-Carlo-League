@@ -103,8 +103,8 @@ class DataProcessor:
         print("Preparing role-specific datasets...")
 
         selected_features = [
-            'KDE', 'DPM', 'Multi-Kill', 'GPM', 'VSPM', 'WCPM',
-            'GD@15', 'XPD@15', 'CSD@15', 'LVLD@15', 'DTPD'
+            'KDE', 'KP%', 'DPM', 'Multi-Kill', 'GPM', 'VSPM', 'WCPM',
+            'GD@15', 'XPD@15', 'CSD@15', 'DTPD'
         ]
         available = [f for f in selected_features if f in df.columns]
         df_clean = df[available + ['Win', 'Role', 'Game_ID']].copy()
@@ -114,7 +114,7 @@ class DataProcessor:
         for role in roles:
             if 'Role' not in df_clean.columns:
                 raise ValueError("Missing 'Role' column in dataset.")
-            role_data = df_clean[df_clean['Role'] == role].dropna(subset=available)
+            role_data = df_clean[df_clean['Role'] == role]
             role_datasets[role] = role_data
             print(f"{role}: {len(role_data)} samples")
         return role_datasets
@@ -132,6 +132,8 @@ class DataProcessor:
 
         # Drop only truly categorical columns (Role), keep Multi-Kill
         X = X.drop(columns=[col for col in categorical if col in X.columns])
+        
+        # Handle missing @15 features by filling with 0 (neutral early game)
 
         mean_pipe = Pipeline([('imputer', SimpleImputer(strategy='mean')), ('scaler', StandardScaler())])
         median_pipe = Pipeline([('imputer', SimpleImputer(strategy='median')), ('scaler', StandardScaler())])

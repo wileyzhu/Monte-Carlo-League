@@ -257,21 +257,12 @@ class TeamAutoregressiveModel:
             model = model_data['model']
             idata = model_data['idata']
             
-            # Update model with new data for prediction
+            # Use PyMC's standard posterior predictive sampling
             with model:
-                # Update mutable data with recent performance
-                pm.set_data({"y": performance_history})
-                
-                # Sample posterior predictive for next time step
-                pred_samples = pm.sample_posterior_predictive(
-                    idata, 
-                    predictions=True,
-                    extend_inferencedata=False,
-                    random_seed=42
-                )
+                ppc = pm.sample_posterior_predictive(idata)
             
-            # Extract predictions
-            predictions = pred_samples.predictions['likelihood'].values.flatten()
+            # Extract predictions from the likelihood
+            predictions = ppc.posterior_predictive['likelihood'].values.flatten()
             
             # Calculate statistics
             mean_pred = np.mean(predictions)
@@ -359,14 +350,35 @@ class TeamAutoregressiveModel:
             idata = model_data['idata']
             history = self.team_histories[team]
             
-            # Extract posterior statistics
+            # Extract posterior statistics for AR(3) model
             try:
                 coef_summary = az.summary(idata, var_names=['coefs'])
-                constant_mean = coef_summary['mean'].iloc[0]  # Constant term
-                ar_coef_mean = coef_summary['mean'].iloc[1]   # AR coefficient
-                constant_std = coef_summary['sd'].iloc[0]
-                ar_coef_std = coef_summary['sd'].iloc[1]
                 sigma_mean = az.summary(idata, var_names=['sigma'])['mean'].iloc[0]
+                
+                # Extract all AR(3) coefficients: [constant, φ₁, φ₂, φ₃]
+                constant_mean = coef_summary['mean'].iloc[0]  # Constant term
+                ar1_coef_mean = coef_summary['mean'].iloc[1]  # AR lag 1 coefficient
+                ar2_coef_mean = coef_summary['mean'].iloc[2]  # AR lag 2 coefficient  
+                ar3_coef_mean = coef_summary['mean'].iloc[3]  # AR lag 3 coefficient
+                
+                constant_std = coef_summary['sd'].iloc[0]
+                ar1_coef_std = coef_summary['sd'].iloc[1]
+                ar2_coef_std = coef_summary['sd'].iloc[2]
+                ar3_coef_std = coef_summary['sd'].iloc[3]
+                
+                # Get predicted mean for next performance
+                try:
+                    team_pred = self.predict_team_performance(team)
+                    predicted_mean = team_pred['mean']
+                    predicted_std = team_pred['std']
+                    predicted_lower = team_pred['lower_95']
+                    predicted_upper = team_pred['upper_95']
+                except:
+                    # Fallback if prediction fails
+                    predicted_mean = np.mean(history)
+                    predicted_std = np.std(history)
+                    predicted_lower = predicted_mean - 1.96 * predicted_std
+                    predicted_upper = predicted_mean + 1.96 * predicted_std
                 
                 summaries.append({
                     'Team': team,
@@ -375,9 +387,17 @@ class TeamAutoregressiveModel:
                     'Performance_Std': np.std(history),
                     'Constant_Mean': constant_mean,
                     'Constant_Std': constant_std,
-                    'AR_Coef_Mean': ar_coef_mean,
-                    'AR_Coef_Std': ar_coef_std,
-                    'Noise_Sigma': sigma_mean
+                    'AR1_Coef_Mean': ar1_coef_mean,
+                    'AR1_Coef_Std': ar1_coef_std,
+                    'AR2_Coef_Mean': ar2_coef_mean,
+                    'AR2_Coef_Std': ar2_coef_std,
+                    'AR3_Coef_Mean': ar3_coef_mean,
+                    'AR3_Coef_Std': ar3_coef_std,
+                    'Noise_Sigma': sigma_mean,
+                    'Predicted_Mean': predicted_mean,
+                    'Predicted_Std': predicted_std,
+                    'Predicted_Lower_95': predicted_lower,
+                    'Predicted_Upper_95': predicted_upper
                 })
             except Exception as e:
                 summaries.append({
@@ -387,9 +407,17 @@ class TeamAutoregressiveModel:
                     'Performance_Std': np.std(history),
                     'Constant_Mean': np.nan,
                     'Constant_Std': np.nan,
-                    'AR_Coef_Mean': np.nan,
-                    'AR_Coef_Std': np.nan,
-                    'Noise_Sigma': np.nan
+                    'AR1_Coef_Mean': np.nan,
+                    'AR1_Coef_Std': np.nan,
+                    'AR2_Coef_Mean': np.nan,
+                    'AR2_Coef_Std': np.nan,
+                    'AR3_Coef_Mean': np.nan,
+                    'AR3_Coef_Std': np.nan,
+                    'Noise_Sigma': np.nan,
+                    'Predicted_Mean': np.mean(history),
+                    'Predicted_Std': np.std(history),
+                    'Predicted_Lower_95': np.nan,
+                    'Predicted_Upper_95': np.nan
                 })
         
         return pd.DataFrame(summaries)

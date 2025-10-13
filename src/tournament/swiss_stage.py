@@ -61,10 +61,10 @@ class SwissTournament:
         # Pair top seeds with low seeds, avoiding same regions
         used_low = set()
         for top_team in top:
-            top_region = team_regions.get(top_team, 'UNKNOWN')
+            top_region = self.team_regions.get(top_team, 'UNKNOWN')
             for low_team in low:
                 if low_team not in used_low:
-                    low_region = team_regions.get(low_team, 'UNKNOWN')
+                    low_region = self.team_regions.get(low_team, 'UNKNOWN')
                     if top_region != low_region:
                         pairs.append((top_team, low_team))
                         used_low.add(low_team)
@@ -82,19 +82,19 @@ class SwissTournament:
         last_mid = available_mid[-1]
         second_last_mid = available_mid[-2]
 
-        while team_regions.get(last_mid, 'UNKNOWN') == team_regions.get(second_last_mid, 'UNKNOWN'):
+        while self.team_regions.get(last_mid, 'UNKNOWN') == self.team_regions.get(second_last_mid, 'UNKNOWN'):
             random.shuffle(available_mid)
             last_mid = available_mid[-1]
             second_last_mid = available_mid[-2]
 
         while len(available_mid) >= 2:
             team1 = available_mid.pop(0)
-            team1_region = team_regions.get(team1, 'UNKNOWN')
+            team1_region = self.team_regions.get(team1, 'UNKNOWN')
             
             # Find a team from different region
             paired = False
             for i, team2 in enumerate(available_mid):
-                team2_region = team_regions.get(team2, 'UNKNOWN')
+                team2_region = self.team_regions.get(team2, 'UNKNOWN')
                 if team1_region != team2_region:
                     pairs.append((team1, team2))
                     available_mid.pop(i)
@@ -142,53 +142,53 @@ class SwissTournament:
 
 # ----- Example usage -----
 if __name__ == "__main__":
-    teams1 = ['BLG', 'Geng', 'G2', 'Flyquest', 'CFO', 'AL', 'HLE', 'MKOI', 'VKS',
-            'TSW', 'TES', 'IG', 'KT', 'FNC', '100T','PSG']
-    teams2 = ['BLG', 'Geng', 'G2', 'Flyquest', 'CFO', 'AL', 'HLE', 'MKOI', 'VKS',
-            'TSW', 'KT', 'T1', 'TES', 'FNC', '100T','PSG']
+    teams1 = ['Bilibili Gaming', 'Gen.G eSports', 'G2 Esports', 'FlyQuest', 'CTBC Flying Oyster', 'Anyone s Legend', 'Hanwha Life eSports', 'Movistar KOI', 'Vivo Keyd Stars',
+            'Team Secret Whales', 'Top Esports', 'Invictus Gaming', 'KT Rolster', 'Fnatic', '100 Thieves','PSG Talon']
+    teams2 = ['Bilibili Gaming', 'Gen.G eSports', 'G2 Esports', 'FlyQuest', 'CTBC Flying Oyster', 'Anyone s Legend', 'Hanwha Life eSports', 'Movistar KOI', 'Vivo Keyd Stars',
+            'Team Secret Whales', 'KT Rolster', 'T1', 'Top Esports', 'Fnatic', '100 Thieves','PSG Talon']
 
     team_regions = {
-    # LPL teams
-    'BLG': 'LPL',
-    'TES': 'LPL',
-    'IG': 'LPL',
+    # LPL teams (CN)
+    'Bilibili Gaming': 'LPL',
+    'Top Esports': 'LPL',
+    'Invictus Gaming': 'LPL',
+    'Anyone s Legend': 'LPL',
     
-    # LCK teams
-    'Geng': 'LCK',
-    'HLE': 'LCK',
-    'KT': 'LCK',
+    # LCK teams (KR)
+    'Gen.G eSports': 'LCK',
+    'Hanwha Life eSports': 'LCK',
+    'KT Rolster': 'LCK',
     'T1': 'LCK',
     
-    # LEC teams
-    'G2': 'LEC',
-    'FNC': 'LEC',
+    # LEC teams (EUW)
+    'G2 Esports': 'LEC',
+    'Fnatic': 'LEC',
+    'Movistar KOI': 'LEC',
     
-    # LTA teams
-    'Flyquest': 'LTA',
-    '100T': 'LTA',
+    # LCS teams (NA)
+    'FlyQuest': 'LTA',
+    '100 Thieves': 'LTA',
     
-    # PCS teams
-    'PSG': 'PCS',
-    'CFO': 'PCS',
+    # PCS teams (TW)
+    'PSG Talon': 'PCS',
+    'CTBC Flying Oyster': 'PCS',
     
-    # Other regions/wildcards
-    'AL': 'LPL',
-    'MKOI': 'LEC',  # Assuming LEC for now
-    'VKS': 'LTA',  # Assuming LTA for now
-    'TSW': 'PCS'   # Assuming PCS for now
+    # Other regions
+    'Vivo Keyd Stars': 'LTA',  # LAT region
+    'Team Secret Whales': 'PCS'   # VN region
 }
 
-    playin_teams = ['IG', 'T1']
+    playin_teams = ['Invictus Gaming', 'T1']
     win_probs = np.random.rand(2,2)
 
     playin = Playin(playin_teams, win_probs, best_of=5)
     playin_team = playin.run()
-    if playin_team == 'IG':
+    if playin_team == 'Invictus Gaming':
         teams = teams1
     else:
         teams = teams2
 
-    seed_groups = {t: (0 if i < 4 else 1 if i < 8 else 2 if i < 12 else 3)
+    seed_groups = {t: (0 if i < 5 else 1 if i < 12 else 2)
                for i, t in enumerate(teams)}
     np.random.seed(42)
     win_probs = np.random.rand(16, 16)

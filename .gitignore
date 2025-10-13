@@ -1,1 +1,6 @@
 Monte_Carlo/
+.kiro/
+__pycache__/
+*.pyc
+.DS_Store
+.vscode/

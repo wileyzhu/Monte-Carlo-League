@@ -1,0 +1,99 @@
+{
+  "total_simulations": 100,
+  "champion_statistics": [
+    [
+      "FlyQuest",
+      28,
+      0.28
+    ],
+    [
+      "Gen.G eSports",
+      16,
+      0.16
+    ],
+    [
+      "CTBC Flying Oyster",
+      13,
+      0.13
+    ],
+    [
+      "Top Esports",
+      9,
+      0.09
+    ],
+    [
+      "Vivo Keyd Stars",
+      5,
+      0.05
+    ],
+    [
+      "100 Thieves",
+      4,
+      0.04
+    ],
+    [
+      "Anyone s Legend",
+      4,
+      0.04
+    ],
+    [
+      "G2 Esports",
+      4,
+      0.04
+    ],
+    [
+      "Bilibili Gaming",
+      4,
+      0.04
+    ],
+    [
+      "Hanwha Life eSports",
+      3,
+      0.03
+    ],
+    [
+      "Movistar KOI",
+      3,
+      0.03
+    ],
+    [
+      "T1",
+      2,
+      0.02
+    ],
+    [
+      "Fnatic",
+      1,
+      0.01
+    ],
+    [
+      "KT Rolster",
+      1,
+      0.01
+    ],
+    [
+      "Team Secret Whales",
+      1,
+      0.01
+    ],
+    [
+      "PSG Talon",
+      1,
+      0.01
+    ],
+    [
+      "Invictus Gaming",
+      1,
+      0.01
+    ]
+  ],
+  "regional_distribution": {
+    "LEC": 8,
+    "LCK": 22,
+    "PCS": 15,
+    "LPL": 18,
+    "LTA": 37
+  },
+  "most_likely_champion": "FlyQuest",
+  "champion_probability": 0.28
+}
