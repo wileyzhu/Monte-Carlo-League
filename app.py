@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, jsonify, session
 import json
 import random
 import numpy as np
-from worlds_tournament import WorldsTournament
+from src.tournament.worlds_tournament import WorldsTournament
 import uuid
 from datetime import datetime
 
@@ -264,4 +264,4 @@ def generate_chart():
         }), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    app.run(debug=True, host='0.0.0.0', port=3000)

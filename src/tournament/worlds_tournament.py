@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
 import random
-from playin import Playin
-from swiss_stage import SwissTournament
-from elimination import Elimination
+from .playin import Playin
+from .swiss_stage import SwissTournament
+from .elimination import Elimination
 
 class WorldsTournament:
     """
@@ -315,7 +315,7 @@ class WorldsTournament:
                 else:
                     playin_win_probs[i, j] = self.get_win_probability(team1, team2)
         
-        from playin import Playin
+        # Playin already imported at top of file
         playin = Playin(playin_teams, playin_win_probs, best_of=5)
         playin_winner = playin.run()
         playin_loser = playin_teams[1] if playin_winner == playin_teams[0] else playin_teams[0]

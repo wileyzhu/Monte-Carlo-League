@@ -1,6 +1,6 @@
 import numpy as np
 import random
-from swiss_stage import SwissTournament
+from .swiss_stage import SwissTournament
 
 class Elimination(SwissTournament):
     def __init__(self, teams, seed_groups, win_probs, team_regions=None, best_of=5):

@@ -1,6 +1,6 @@
 import numpy as np
 import random
-from playin import Playin
+from .playin import Playin
 
 class SwissTournament:
     def __init__(self, teams, seed_groups, team_regions, win_probs, best_of=1):

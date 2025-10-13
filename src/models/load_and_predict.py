@@ -6,8 +6,8 @@ Loads datasets, applies preprocessing, loads trained models, and generates predi
 import pandas as pd
 import numpy as np
 from pathlib import Path
-import data_preprocessing
-import state_space
+from ..data import data_preprocessing
+from . import state_space
 
 # Import dependencies with availability checks
 try:

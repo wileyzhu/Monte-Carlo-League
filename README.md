@@ -8,7 +8,7 @@ A comprehensive tournament simulation system using Bayesian AR(3) models and reg
 ```bash
 python app.py
 ```
-Visit `http://localhost:5000` to access the interactive web interface.
+Visit `http://localhost:3000` to access the interactive web interface.
 
 ### Command Line Simulation
 ```bash
