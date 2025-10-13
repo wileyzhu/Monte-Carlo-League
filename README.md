@@ -1,89 +1,115 @@
-# Worlds 2024 Tournament Simulation
+# League of Legends Tournament Prediction System
 
-A comprehensive League of Legends Worlds 2024 tournament simulation using Bayesian AR(3) models and MSI 2024-based regional strength adjustments.
+A comprehensive tournament simulation system using Bayesian AR(3) models and regional strength adjustments. Features a web interface for interactive bracket visualization and Monte Carlo simulations.
 
-## Project Structure
+## 🚀 Quick Start
 
-### Core Simulation Files
-- `worlds_tournament.py` - Main tournament simulation with interactive menu
-- `swiss_stage.py` - Swiss stage tournament format implementation  
-- `elimination.py` - Elimination bracket implementation
-- `playin.py` - Play-in stage implementation
-
-### Model & Data Files
-- `probability_matrix.py` - Generates team win probability matrix using Bayesian AR(3) model
-- `regional_adjustment.py` - Applies MSI 2024-based regional strength adjustments
-- `msi_regional_analysis.py` - Analyzes MSI 2024 results to generate empirical regional strengths
-
-### Data Processing
-- `data_collection.py` - Collects team performance data
-- `data_preprocessing.py` - Preprocesses data for model training
-- `state_space.py` - State space model implementation
-- `load_and_predict.py` - Loads trained models and generates predictions
-- `test_ar_model.py` - Tests AR model performance
-
-### Data Directory
-- `dataset/` - Contains CSV files with team data and probability matrices
-- `models/` - Contains trained Bayesian AR(3) model files
-
-## Usage
-
-### Run Tournament Simulation
+### Web Application
 ```bash
-python worlds_tournament.py
+python app.py
+```
+Visit `http://localhost:5000` to access the interactive web interface.
+
+### Command Line Simulation
+```bash
+python src/tournament/worlds_tournament.py
 ```
 
-Choose from:
-1. Single tournament (detailed results)
-2. Multiple simulations (100x for statistics)  
-3. Quick demo
+## 📁 Project Structure
 
-### Generate New Probability Matrix
+```
+├── src/                          # Core application code
+│   ├── data/                     # Data processing modules
+│   │   ├── data_collection.py    # Data gathering utilities
+│   │   ├── data_preprocessing.py # Data cleaning and preparation
+│   │   ├── regional_adjustment.py # Regional performance adjustments
+│   │   └── msi_regional_analysis.py # Regional analysis tools
+│   ├── tournament/               # Tournament logic
+│   │   ├── elimination.py        # Elimination bracket logic
+│   │   ├── swiss_stage.py       # Swiss format implementation
+│   │   └── worlds_tournament.py # Main tournament orchestration
+│   └── models/                   # Prediction models
+│       ├── probability_matrix.py # Team matchup probabilities
+│       ├── load_and_predict.py  # Model loading and prediction
+│       └── state_space.py       # State space modeling
+├── static/                       # Web assets (CSS, JS)
+├── templates/                    # HTML templates
+├── scripts/                      # Utility scripts
+├── tests/                        # Test modules
+├── dataset/                      # Data files
+├── models/                       # Trained model files
+└── app.py                        # Main Flask application
+```
+
+## ⚡ Features
+
+### Tournament Formats
+- **Swiss Stage**: 16 teams, 3 wins to advance, 3 losses eliminated
+- **Elimination Brackets**: Single/double elimination with seeding
+- **Play-in Stage**: Qualification rounds for lower-seeded teams
+
+### Prediction Models
+- **Bayesian AR(3) Model**: Historical performance-based predictions
+- **Regional Adjustments**: MSI-based inter-regional strength calibration
+- **Monte Carlo Simulation**: Statistical analysis through multiple runs
+
+### Web Interface
+- Interactive bracket visualization
+- Real-time simulation results
+- Team performance analytics
+- Tournament progression tracking
+
+## 🎯 Usage Examples
+
+### Generate Probability Matrix
 ```bash
-python probability_matrix.py
+python src/models/probability_matrix.py
 ```
 
 ### Apply Regional Adjustments
 ```bash
-python regional_adjustment.py
+python src/data/regional_adjustment.py
 ```
 
-## Key Features
+### Run Tests
+```bash
+python -m pytest tests/
+```
 
-### MSI 2024-Based Regional Strengths
-- **LCK (Korea)**: 1.000 - Perfect MSI performance (5-0 matches)
-- **LPL (China)**: 0.808 - Strong second (6-3 matches) 
-- **PCS (Taiwan/Vietnam)**: 0.510 - Includes GAM performance
-- **LTA (Americas)**: 0.487 - Poor MSI showing (1-4 matches)
-- **LEC (Europe)**: 0.400 - Worst major region (2-5 matches)
+## 📊 Regional Strength Analysis
 
-### Tournament Results (100 Simulations)
-1. **Gen.G eSports (LCK)** - 54% championship probability
-2. **Hanwha Life eSports (LCK)** - 17%
-3. **T1 (LCK)** - 11%
-4. **Top Esports (LPL)** - 6%
-5. **Bilibili Gaming (LPL)** - 5%
+Based on MSI performance data:
+- **LCK (Korea)**: 1.000 - Dominant regional performance
+- **LPL (China)**: 0.808 - Strong secondary region
+- **PCS (Taiwan/Vietnam)**: 0.510 - Emerging region strength
+- **LTA (Americas)**: 0.487 - Competitive but inconsistent
+- **LEC (Europe)**: 0.400 - Rebuilding phase
 
-### Regional Distribution
-- **LCK**: ~82% of championships (reflects MSI dominance)
-- **LPL**: ~15% (strong second tier)
-- **LTA**: ~2% (realistic after poor MSI)
-- **LEC**: 0% (reflects terrible MSI performance)
+## 🛠️ Technical Stack
 
-## Technical Details
+- **Backend**: Python Flask
+- **Frontend**: HTML5, CSS3, JavaScript
+- **Models**: Bayesian AR(3), State Space Models
+- **Data Processing**: Pandas, NumPy
+- **Visualization**: Matplotlib, Chart.js
+- **Testing**: Pytest
 
-- **Bayesian AR(3) Model**: Predicts team performance based on historical data
-- **Swiss Stage Format**: 16 teams, 3 wins to advance, 3 losses eliminated
-- **Regional Penalties**: Empirically derived from MSI 2024 inter-regional matchups
-- **Monte Carlo Simulation**: 100+ tournament simulations for statistical analysis
+## 📈 Model Performance
 
-## Dependencies
+The system uses empirically-derived regional adjustments from international tournament results, providing:
+- Accurate inter-regional matchup predictions
+- Statistical confidence intervals
+- Historical performance validation
+- Monte Carlo simulation reliability
 
-- pandas
-- numpy
-- scipy (for Bayesian models)
-- matplotlib (for visualizations)
+## 🤝 Contributing
 
-## Model Accuracy
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes in the appropriate `src/` directory
+4. Add tests in the `tests/` directory
+5. Submit a pull request
 
-The simulation uses actual MSI 2024 results to calibrate regional strength differences, making it the most empirically accurate Worlds prediction model available.
+## 📄 License
+
+This project is open source and available under the MIT License.
