@@ -1,6 +1,5 @@
 import numpy as np
 import random
-from .playin import Playin
 
 class SwissTournament:
     def __init__(self, teams, seed_groups, team_regions, win_probs, best_of=1):
@@ -16,6 +15,8 @@ class SwissTournament:
         self.win_probs = win_probs
         self.best_of = best_of
         self.records = {t: [0, 0] for t in teams}  # wins, losses
+        self.round_results = []  # Track detailed round results
+        self.current_round = 0
 
     def match(self, team_a, team_b):
         """Simulate a single map between team_a and team_b."""
@@ -37,14 +38,155 @@ class SwissTournament:
                 wins_b += 1
 
         return team_a if wins_a > wins_b else team_b
+    
+    def simulate_bo3_series(self, team_a, team_b):
+        """
+        Simulate a realistic BO3 series using single-game win probabilities.
+        
+        Returns:
+            tuple: (winner, loser, final_score, games_list)
+        """
+        game_win_prob = self.win_probs[self.teams.index(team_a), self.teams.index(team_b)]
+        
+        games = []
+        team_a_wins = 0
+        team_b_wins = 0
+        game_num = 1
+        
+        # Play games until one team reaches 2 wins
+        while team_a_wins < 2 and team_b_wins < 2:
+            # Simulate single game based on win probability
+            if random.random() < game_win_prob:
+                game_winner = team_a
+                team_a_wins += 1
+            else:
+                game_winner = team_b
+                team_b_wins += 1
+            
+            games.append({
+                'game_number': game_num,
+                'winner': game_winner,
+                'score': f'{team_a_wins}-{team_b_wins}'
+            })
+            
+            game_num += 1
+        
+        # Determine series winner and final score
+        if team_a_wins == 2:
+            winner = team_a
+            loser = team_b
+            final_score = f'2-{team_b_wins}'
+        else:
+            winner = team_b
+            loser = team_a
+            final_score = f'2-{team_a_wins}'
+        
+        return winner, loser, final_score, games
 
-    def play_round(self, pairs, best_of=None):
-        """Play a round with given pairs of teams."""
+    def play_round(self, pairs, best_of=None, round_name="Round"):
+        """Play a round with given pairs of teams and track detailed results."""
+        if best_of is None:
+            best_of = self.best_of
+            
+        round_matches = []
+        
         for a, b in pairs:
-            winner = self.match_series(a, b, best_of)
-            loser = b if winner == a else a
+            # Get records before match
+            a_record_before = f"{self.records[a][0]}-{self.records[a][1]}"
+            b_record_before = f"{self.records[b][0]}-{self.records[b][1]}"
+            
+            if best_of == 3:
+                # Use realistic BO3 simulation for elimination matches
+                winner, loser, final_score, games = self.simulate_bo3_series(a, b)
+                games_played = len(games)
+            else:
+                # BO1 match
+                winner = self.match_series(a, b, best_of)
+                loser = b if winner == a else a
+                final_score = "1-0"
+                games_played = 1
+                games = [{'game_number': 1, 'winner': winner, 'score': '1-0'}]
+            
+            # Update records
             self.records[winner][0] += 1
             self.records[loser][1] += 1
+            
+            # Track match details
+            match_result = {
+                'team_a': a,
+                'team_b': b,
+                'winner': winner,
+                'loser': loser,
+                'score': final_score,
+                'best_of': best_of,
+                'games_played': games_played,
+                'games': games,
+                'team_a_record_before': a_record_before,
+                'team_b_record_before': b_record_before,
+                'team_a_record_after': f"{self.records[a][0]}-{self.records[a][1]}",
+                'team_b_record_after': f"{self.records[b][0]}-{self.records[b][1]}"
+            }
+            round_matches.append(match_result)
+        
+        # Store round results
+        round_result = {
+            'round_name': f"{round_name} {self.current_round + 1}",
+            'round_number': self.current_round + 1,
+            'matches': round_matches
+        }
+        self.round_results.append(round_result)
+        self.current_round += 1
+    
+    def play_mixed_round(self, matches_with_format, round_name="Swiss Round"):
+        """Play a round with mixed BO1/BO3 matches simultaneously."""
+        round_matches = []
+        
+        for a, b, best_of in matches_with_format:
+            # Get records before match
+            a_record_before = f"{self.records[a][0]}-{self.records[a][1]}"
+            b_record_before = f"{self.records[b][0]}-{self.records[b][1]}"
+            
+            if best_of == 3:
+                # Use realistic BO3 simulation for elimination matches
+                winner, loser, final_score, games = self.simulate_bo3_series(a, b)
+                games_played = len(games)
+            else:
+                # BO1 match
+                winner = self.match_series(a, b, best_of)
+                loser = b if winner == a else a
+                final_score = "1-0"
+                games_played = 1
+                games = [{'game_number': 1, 'winner': winner, 'score': '1-0'}]
+            
+            # Update records
+            self.records[winner][0] += 1
+            self.records[loser][1] += 1
+            
+            # Track match details
+            match_result = {
+                'team_a': a,
+                'team_b': b,
+                'winner': winner,
+                'loser': loser,
+                'score': final_score,
+                'best_of': best_of,
+                'games_played': games_played,
+                'games': games,
+                'team_a_record_before': a_record_before,
+                'team_b_record_before': b_record_before,
+                'team_a_record_after': f"{self.records[a][0]}-{self.records[a][1]}",
+                'team_b_record_after': f"{self.records[b][0]}-{self.records[b][1]}"
+            }
+            round_matches.append(match_result)
+        
+        # Store round results
+        round_result = {
+            'round_name': f"{round_name} {self.current_round + 1}",
+            'round_number': self.current_round + 1,
+            'matches': round_matches
+        }
+        self.round_results.append(round_result)
+        self.current_round += 1
 
     def seeded_round1(self):
         """Round 1: deterministic pairings by seed groups, avoiding same-region matchups."""
@@ -101,7 +243,7 @@ class SwissTournament:
                     paired = True
                     break
         
-        self.play_round(pairs, best_of=1)
+        self.play_round(pairs, best_of=1, round_name="Opening Round")
 
     def swiss_round(self):
         """Subsequent Swiss rounds: group by record, pair within groups."""
@@ -110,6 +252,10 @@ class SwissTournament:
             if w < 3 and l < 3:  # still alive
                 groups.setdefault((w, l), []).append(t)
 
+        # Collect ALL matches for this round
+        all_matches = []
+        has_elimination = False
+        
         for group, tlist in groups.items():
             w, l = group
             random.shuffle(tlist)
@@ -118,9 +264,27 @@ class SwissTournament:
                     a, b = tlist[i], tlist[i+1]
                     # Decider matches (at 2–x) can be BO3
                     if w == 2 or l == 2:
-                        self.play_round([(a, b)], best_of=3)
+                        all_matches.append((a, b, 3))  # BO3
+                        has_elimination = True
                     else:
-                        self.play_round([(a, b)], best_of=1)
+                        all_matches.append((a, b, 1))  # BO1
+        
+        # Play ALL matches in ONE single round (proper Swiss system)
+        if all_matches:
+            # All matches happen simultaneously in one round
+            mixed_matches = []
+            round_name = "Swiss Round"
+            has_elimination = any(bo == 3 for _, _, bo in all_matches)
+            
+            if has_elimination:
+                round_name = "Swiss Round (Mixed BO1/BO3)"
+            
+            # Process each match with its specific format
+            for a, b, best_of in all_matches:
+                mixed_matches.append((a, b, best_of))
+            
+            # Play all matches in one round call
+            self.play_mixed_round(mixed_matches, round_name)
 
     def assign_seeds(self):
         top = [t for t, (w, l) in self.records.items() if l == 0]
@@ -130,76 +294,30 @@ class SwissTournament:
         return top, mid, low
 
     def run(self):
-        """Run full Swiss stage until all teams are decided."""
+        """Run full Swiss stage for exactly 5 rounds (proper Swiss system)."""
         self.seeded_round1()
-        while not all(w == 3 or l == 3 for w, l in self.records.values()):
+        
+        # Run exactly 4 more rounds (5 total for 16 teams)
+        for round_num in range(4):
+            # Check if we have enough decided teams to stop early
+            decided_teams = sum(1 for w, l in self.records.values() if w >= 3 or l >= 3)
+            if decided_teams >= 14:  # If 14+ teams are decided, we can stop
+                break
             self.swiss_round()
+        
+        # Determine qualified teams by ranking (top 8 by wins, then by losses)
+        team_records = [(team, wins, losses) for team, (wins, losses) in self.records.items()]
+        team_records.sort(key=lambda x: (-x[1], x[2]))  # Sort by wins desc, losses asc
+        
+        qualified = [team for team, _, _ in team_records[:8]]
+        eliminated = [team for team, _, _ in team_records[8:]]
+        
+        return {
+            'qualified': qualified,
+            'eliminated': eliminated, 
+            'records': self.records,
+            'seeding': self.assign_seeds(),
+            'round_results': self.round_results,
+            'total_rounds': self.current_round
+        }
 
-        qualified = [t for t, (w, _) in self.records.items() if w == 3]
-        eliminated = [t for t, (_, l) in self.records.items() if l == 3]
-        return qualified, eliminated, self.records, self.assign_seeds()
-
-
-# ----- Example usage -----
-if __name__ == "__main__":
-    teams1 = ['Bilibili Gaming', 'Gen.G eSports', 'G2 Esports', 'FlyQuest', 'CTBC Flying Oyster', 'Anyone s Legend', 'Hanwha Life eSports', 'Movistar KOI', 'Vivo Keyd Stars',
-            'Team Secret Whales', 'Top Esports', 'Invictus Gaming', 'KT Rolster', 'Fnatic', '100 Thieves','PSG Talon']
-    teams2 = ['Bilibili Gaming', 'Gen.G eSports', 'G2 Esports', 'FlyQuest', 'CTBC Flying Oyster', 'Anyone s Legend', 'Hanwha Life eSports', 'Movistar KOI', 'Vivo Keyd Stars',
-            'Team Secret Whales', 'KT Rolster', 'T1', 'Top Esports', 'Fnatic', '100 Thieves','PSG Talon']
-
-    team_regions = {
-    # LPL teams (CN)
-    'Bilibili Gaming': 'LPL',
-    'Top Esports': 'LPL',
-    'Invictus Gaming': 'LPL',
-    'Anyone s Legend': 'LPL',
-    
-    # LCK teams (KR)
-    'Gen.G eSports': 'LCK',
-    'Hanwha Life eSports': 'LCK',
-    'KT Rolster': 'LCK',
-    'T1': 'LCK',
-    
-    # LEC teams (EUW)
-    'G2 Esports': 'LEC',
-    'Fnatic': 'LEC',
-    'Movistar KOI': 'LEC',
-    
-    # LCS teams (NA)
-    'FlyQuest': 'LTA',
-    '100 Thieves': 'LTA',
-    
-    # PCS teams (TW)
-    'PSG Talon': 'PCS',
-    'CTBC Flying Oyster': 'PCS',
-    
-    # Other regions
-    'Vivo Keyd Stars': 'LTA',  # LAT region
-    'Team Secret Whales': 'PCS'   # VN region
-}
-
-    playin_teams = ['Invictus Gaming', 'T1']
-    win_probs = np.random.rand(2,2)
-
-    playin = Playin(playin_teams, win_probs, best_of=5)
-    playin_team = playin.run()
-    if playin_team == 'Invictus Gaming':
-        teams = teams1
-    else:
-        teams = teams2
-
-    seed_groups = {t: (0 if i < 5 else 1 if i < 12 else 2)
-               for i, t in enumerate(teams)}
-    np.random.seed(42)
-    win_probs = np.random.rand(16, 16)
-    np.fill_diagonal(win_probs, 0.5)
-
-    # Run one Swiss tournament
-    swiss = SwissTournament(teams, seed_groups, team_regions, win_probs)
-    qualified, eliminated, records, seeding = swiss.run()
-
-
-    print("Qualified:", qualified)
-    print("Eliminated:", eliminated)
-    print("Records:", records)
-    print("Seeding:", seeding)

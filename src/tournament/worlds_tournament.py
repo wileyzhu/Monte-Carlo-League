@@ -103,7 +103,7 @@ class WorldsTournament:
     
     def run_play_in(self, play_in_teams):
         """
-        Run Play-In stage to determine advancing teams.
+        Run Play-In stage to determine advancing teams using realistic BO5 simulation.
         
         Args:
             play_in_teams: List of teams in Play-In
@@ -120,7 +120,34 @@ class WorldsTournament:
             print("Not enough teams for Play-In. All advance.")
             return play_in_teams
         
-        # For simplicity, run pairwise eliminations
+        # For 2 teams (T1 vs Invictus Gaming), use realistic playin simulation
+        if len(play_in_teams) == 2:
+            team1, team2 = play_in_teams
+            
+            # Create win probability matrix
+            playin_win_probs = np.zeros((2, 2))
+            for i, t1 in enumerate(play_in_teams):
+                for j, t2 in enumerate(play_in_teams):
+                    if i == j:
+                        playin_win_probs[i, j] = 0.5
+                    else:
+                        playin_win_probs[i, j] = self.get_win_probability(t1, t2)
+            
+            # Run realistic playin with score distributions
+            playin = Playin(play_in_teams, playin_win_probs, best_of=5)
+            winner = playin.run(realistic=True)
+            series_details = playin.get_series_details()
+            
+            print(f"\nPlay-In Final (BO5)")
+            print("-" * 30)
+            print(f"  {team1} vs {team2}")
+            print(f"  Winner: {winner}")
+            print(f"  Final Score: {series_details['final_score']}")
+            print(f"  Series Length: {series_details['series_length']} games")
+            
+            return [winner]
+        
+        # For more teams, run pairwise eliminations (legacy method)
         advancing_teams = []
         remaining_teams = play_in_teams.copy()
         
@@ -194,15 +221,15 @@ class WorldsTournament:
         print("=" * 60)
         print(f"Swiss Stage teams ({len(swiss_teams)}): {swiss_teams}")
         
-        # Use the provided seeding order
+        # Use proper 5-6-5 seeding distribution for 16 teams
         seed_groups = {}
         for i, team in enumerate(swiss_teams):
             if i < 5:
-                seed_groups[team] = 0  # Pool 0
-            elif i < 12:
-                seed_groups[team] = 1  # Pool 1
+                seed_groups[team] = 0  # Pool 0 (5 teams)
+            elif i < 11:
+                seed_groups[team] = 1  # Pool 1 (6 teams)
             else:
-                seed_groups[team] = 2  # Pool 2
+                seed_groups[team] = 2  # Pool 2 (5 teams)
         
         # Create probability matrix for Swiss teams
         n_teams = len(swiss_teams)
@@ -217,7 +244,12 @@ class WorldsTournament:
         
         # Run Swiss Stage
         swiss_tournament = SwissTournament(swiss_teams, seed_groups, self.team_regions, win_probs)
-        qualified, eliminated, records, seeding = swiss_tournament.run()
+        swiss_results = swiss_tournament.run()
+        
+        qualified = swiss_results['qualified']
+        eliminated = swiss_results['eliminated']
+        records = swiss_results['records']
+        seeding = swiss_results['seeding']
         
         print(f"\nSwiss Stage Results:")
         print(f"Qualified for Elimination: {qualified}")
@@ -229,9 +261,7 @@ class WorldsTournament:
             status = "QUALIFIED" if team in qualified else "ELIMINATED"
             print(f"  {team:<20} {wins}-{losses} ({status})")
         
-
-        
-        return qualified, eliminated, records, seeding
+        return qualified, eliminated, records, seeding, swiss_results
     
     def run_elimination(self, qualified_teams, seeding):
         """
@@ -338,7 +368,7 @@ class WorldsTournament:
                           '100 Thieves', 'PSG Talon']
         
         # Run Swiss Stage
-        qualified, eliminated, records, seeding = self.run_swiss_stage(swiss_teams)
+        qualified, eliminated, records, seeding, swiss_details = self.run_swiss_stage(swiss_teams)
         
         # Run Elimination
         elimination_results = self.run_elimination(qualified, seeding)
@@ -350,6 +380,7 @@ class WorldsTournament:
             'swiss_qualified': qualified,
             'swiss_eliminated': eliminated,
             'swiss_records': records,
+            'swiss_details': swiss_details,
             'elimination_results': elimination_results,
             'champion': elimination_results['champion']
         }

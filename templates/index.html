@@ -12,15 +12,46 @@
 
 <body>
     <div class="container-fluid">
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/">
+                    <i class="fas fa-trophy text-warning"></i> Worlds 2025 Simulator
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/">
+                                <i class="fas fa-home"></i> Main Tournament
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/playin">
+                                <i class="fas fa-gamepad"></i> Play-in Stage
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/swiss">
+                                <i class="fas fa-chess-board"></i> Swiss Stage
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        
         <!-- Header -->
-        <header class="row bg-dark text-white py-3 mb-4">
+        <header class="row text-center mb-4">
             <div class="col">
-                <h1 class="text-center">
+                <h1 class="display-4">
                     <i class="fas fa-trophy text-warning"></i>
-                    Worlds 2025 Tournament Simulator
+                    Main Tournament Simulation
                 </h1>
-                <p class="text-center mb-0">
-                    <small>Powered by Bayesian AR(3) Models & MSI 2025 Regional Strengths</small>
+                <p class="text-muted">
+                    Powered by Bayesian AR(3) Models & MSI 2025 Regional Strengths
                 </p>
             </div>
         </header>

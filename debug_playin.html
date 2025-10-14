@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Play-in</title>
+</head>
+<body>
+    <h1>Debug Play-in API</h1>
+    <button onclick="testPredictions()">Test Predictions</button>
+    <button onclick="testSimulation()">Test Simulation</button>
+    <div id="output"></div>
+
+    <script>
+        async function testPredictions() {
+            try {
+                console.log('Testing predictions...');
+                const response = await fetch('/api/playin/predictions');
+                const data = await response.json();
+                console.log('Predictions response:', data);
+                document.getElementById('output').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('output').innerHTML = 'Error: ' + error.message;
+            }
+        }
+
+        async function testSimulation() {
+            try {
+                console.log('Testing simulation...');
+                const response = await fetch('/api/playin/simulate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        type: 'single'
+                    })
+                });
+                const data = await response.json();
+                console.log('Simulation response:', data);
+                document.getElementById('output').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('output').innerHTML = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

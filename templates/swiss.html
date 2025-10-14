@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swiss Stage Simulation - Worlds 2024</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .team-card {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .qualified {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #f8fff9 0%, #e8f5e8 100%);
+        }
+
+        .eliminated {
+            border-color: #dc3545;
+            background: linear-gradient(135deg, #fff8f8 0%, #f5e8e8 100%);
+        }
+
+        .record-display {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .seed-group {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .seed-top {
+            background-color: #ffd700;
+            color: #000;
+        }
+
+        .seed-mid {
+            background-color: #c0c0c0;
+            color: #000;
+        }
+
+        .seed-low {
+            background-color: #cd7f32;
+            color: #fff;
+        }
+
+        .round-result {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+
+        .matchup {
+            padding: 12px;
+            margin: 4px 0;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .matchup .score-display {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .winner {
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .loser {
+            color: #6c757d;
+        }
+
+        .region-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .region-LCK {
+            background-color: #ff6b6b;
+        }
+
+        .region-LPL {
+            background-color: #4ecdc4;
+        }
+
+        .region-LEC {
+            background-color: #45b7d1;
+        }
+
+        .region-LTA {
+            background-color: #96ceb4;
+        }
+
+        .region-PCS {
+            background-color: #ffeaa7;
+            color: #000;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-trophy"></i> Worlds 2024 Simulator
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Main Tournament</a>
+                <a class="nav-link" href="/playin">Play-in</a>
+                <a class="nav-link active" href="/swiss">Swiss Stage</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="text-center mb-4">
+                    <i class="fas fa-chess-board"></i> Swiss Stage Simulation
+                </h1>
+                <p class="text-center text-muted">
+                    Simulate the Swiss stage with 16 teams competing for 8 qualification spots
+                </p>
+            </div>
+        </div>
+
+        <!-- Team Pool Selection -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4><i class="fas fa-users"></i> Team Pool Configuration</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Play-in Winner:</label>
+                                <select class="form-select" id="playin-winner">
+                                    <option value="T1">T1 (LCK)</option>
+                                    <option value="Invictus Gaming">Invictus Gaming (LPL)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Seeding Strategy:</label>
+                                <select class="form-select" id="seeding-strategy">
+                                    <option value="power">Power Rankings</option>
+                                    <option value="regional">Regional Balance</option>
+                                    <option value="random">Random</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Team Pool -->
+        <div class="row mb-4" id="team-pool-section">
+            <div class="col-12">
+                <h3><i class="fas fa-list"></i> Current Team Pool</h3>
+                <div id="team-pool-loading" class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> Loading team pool...
+                </div>
+                <div id="team-pool-content" style="display: none;">
+                    <!-- Team pool will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Simulation Controls -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4><i class="fas fa-play"></i> Run Swiss Stage Simulation</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button class="btn btn-primary btn-lg w-100 mb-2" onclick="runSingleSwiss()">
+                                    <i class="fas fa-dice"></i> Single Swiss Simulation
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group mb-2">
+                                    <input type="number" class="form-control" id="num-simulations" value="100" min="1"
+                                        max="1000" placeholder="Number of simulations">
+                                    <button class="btn btn-success" onclick="runMultipleSwiss()">
+                                        <i class="fas fa-chart-bar"></i> Multiple Simulations
+                                    </button>
+                                </div>
+                                <small class="text-muted">Run 1-1000 Swiss simulations</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div class="loading" id="simulation-loading">
+            <i class="fas fa-spinner fa-spin fa-2x"></i>
+            <p>Running Swiss stage simulation...</p>
+        </div>
+
+        <!-- Results Container -->
+        <div id="results-container" style="display: none;">
+            <!-- Results will be displayed here -->
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Load team pool on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            loadTeamPool();
+
+            // Update team pool when play-in winner changes
+            document.getElementById('playin-winner').addEventListener('change', loadTeamPool);
+        });
+
+        async function loadTeamPool() {
+            try {
+                const playinWinner = document.getElementById('playin-winner').value;
+                console.log('Loading team pool with play-in winner:', playinWinner);
+
+                document.getElementById('team-pool-loading').style.display = 'block';
+                document.getElementById('team-pool-content').style.display = 'none';
+
+                const response = await fetch(`/api/swiss/teams?playin_winner=${encodeURIComponent(playinWinner)}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    displayTeamPool(data);
+                } else {
+                    console.error('Error loading team pool:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading team pool:', error);
+            }
+        }
+
+        function displayTeamPool(data) {
+            const container = document.getElementById('team-pool-content');
+            const teams = data.teams;
+            const seedGroups = data.seed_groups;
+
+            // Group teams by seed pools: 5-6-5 distribution
+            const seedGroupNames = ['Pool 0 (5)', 'Pool 1 (6)', 'Pool 2 (5)'];
+            const seedClasses = ['seed-top', 'seed-mid', 'seed-low'];
+
+            let html = '<div class="row">';
+
+            for (let i = 0; i < 3; i++) {
+                const teamsInGroup = teams.filter(team => seedGroups[team.name] === i);
+
+                html += `
+                    <div class="col-md-4">
+                        <div class="seed-group ${seedClasses[i]}">
+                            <h5>${seedGroupNames[i]}</h5>
+                            ${teamsInGroup.map(team => `
+                                <div class="mb-2">
+                                    <strong>${team.name}</strong>
+                                    <span class="region-badge region-${team.region}">${team.region}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+
+            container.innerHTML = html;
+            document.getElementById('team-pool-loading').style.display = 'none';
+            container.style.display = 'block';
+        }
+
+        async function runSingleSwiss() {
+            console.log('Running single Swiss simulation...');
+            showLoading();
+
+            try {
+                const playinWinner = document.getElementById('playin-winner').value;
+                const seedingStrategy = document.getElementById('seeding-strategy').value;
+
+                const response = await fetch('/api/swiss/simulate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        type: 'single',
+                        playin_winner: playinWinner,
+                        seeding_strategy: seedingStrategy
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displaySingleSwissResult(data.result);
+                } else {
+                    showError(data.error);
+                }
+            } catch (error) {
+                console.error('Swiss simulation error:', error);
+                showError('Failed to run Swiss simulation: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function runMultipleSwiss() {
+            const numSims = parseInt(document.getElementById('num-simulations').value);
+
+            if (isNaN(numSims) || numSims < 1 || numSims > 1000) {
+                alert('Please enter a number between 1 and 1000');
+                return;
+            }
+
+            console.log(`Running ${numSims} Swiss simulations...`);
+            document.getElementById('simulation-loading').innerHTML = `
+                <i class="fas fa-spinner fa-spin fa-2x"></i>
+                <p>Running ${numSims} Swiss stage simulations...</p>
+            `;
+            showLoading();
+
+            try {
+                const playinWinner = document.getElementById('playin-winner').value;
+                const seedingStrategy = document.getElementById('seeding-strategy').value;
+
+                const response = await fetch('/api/swiss/simulate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        type: 'multiple',
+                        num_simulations: numSims,
+                        playin_winner: playinWinner,
+                        seeding_strategy: seedingStrategy
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayMultipleSwissResults(data.result);
+                } else {
+                    showError(data.error);
+                }
+            } catch (error) {
+                console.error('Multiple Swiss simulation error:', error);
+                showError('Failed to run Swiss simulations: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function displaySingleSwissResult(result) {
+            const container = document.getElementById('results-container');
+
+            // Display rounds exactly as returned by API (no re-grouping needed)
+            let scheduleHtml = '';
+            if (result.round_results) {
+                const swissRounds = result.round_results.map((round, index) => ({
+                    roundNumber: index + 1,
+                    roundName: round.round_name,
+                    matches: round.matches,
+                    type: round.round_name.includes('Opening') ? 'opening' : 
+                          round.round_name.includes('Mixed') ? 'mixed' : 'swiss'
+                }));
+
+                // Display grouped Swiss rounds
+                swissRounds.forEach(round => {
+                    const bo1Count = round.matches.filter(m => m.best_of === 1).length;
+                    const bo3Count = round.matches.filter(m => m.best_of === 3).length;
+                    
+                    scheduleHtml += `
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-${round.type === 'opening' ? 'play' : round.type === 'mixed' ? 'exclamation-triangle' : 'chess-board'}"></i>
+                                        Round ${round.roundNumber}: ${round.roundName}
+                                    </h6>
+                                    <div>
+                                        ${bo1Count > 0 ? `<span class="badge bg-info me-1">${bo1Count} BO1</span>` : ''}
+                                        ${bo3Count > 0 ? `<span class="badge bg-warning">${bo3Count} BO3</span>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    ${round.matches.map(match => `
+                                        <div class="col-md-6 mb-2">
+                                            <div class="matchup ${match.best_of === 3 ? 'border-warning' : ''}">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div class="text-start">
+                                                        <span class="${match.winner === match.team_a ? 'winner' : 'loser'}">${match.team_a}</span>
+                                                        <small class="text-muted d-block">(${match.team_a_record_before})</small>
+                                                    </div>
+                                                    <div class="text-center">
+                                                        <div class="badge ${match.best_of === 3 ? 'bg-warning text-dark' : 'bg-secondary'} mb-1">BO${match.best_of}</div>
+                                                        <div class="fw-bold text-primary score-display">${match.score}</div>
+                                                        <small class="text-muted">${match.games_played} game${match.games_played > 1 ? 's' : ''}</small>
+                                                    </div>
+                                                    <div class="text-end">
+                                                        <span class="${match.winner === match.team_b ? 'winner' : 'loser'}">${match.team_b}</span>
+                                                        <small class="text-muted d-block">(${match.team_b_record_before})</small>
+                                                    </div>
+                                                </div>
+                                                <div class="text-center mt-2">
+                                                    <small class="text-success">
+                                                        <i class="fas fa-trophy"></i> <strong>${match.winner}</strong>
+                                                        ${match.best_of > 1 ? ` wins ${match.score}` : ' wins'}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            container.innerHTML = `
+                <div class="row">
+                    <!-- Results Summary -->
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4><i class="fas fa-trophy"></i> Final Results</h4>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="text-success"><i class="fas fa-check"></i> Qualified (8)</h5>
+                                ${result.qualified.map(team => `
+                                    <div class="team-card qualified mb-1">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>${team}</strong>
+                                                <span class="region-badge region-${getTeamRegion(team)}">${getTeamRegion(team)}</span>
+                                            </div>
+                                            <div class="record-display">${result.records[team][0]}-${result.records[team][1]}</div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                                
+                                <h5 class="text-danger mt-3"><i class="fas fa-times"></i> Eliminated (8)</h5>
+                                ${result.eliminated.map(team => `
+                                    <div class="team-card eliminated mb-1">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>${team}</strong>
+                                                <span class="region-badge region-${getTeamRegion(team)}">${getTeamRegion(team)}</span>
+                                            </div>
+                                            <div class="record-display">${result.records[team][0]}-${result.records[team][1]}</div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                                
+                                <div class="mt-3">
+                                    <h6>Regional Breakdown</h6>
+                                    ${Object.entries(getRegionalBreakdown(result.qualified)).map(([region, count]) => `
+                                        <div class="d-flex justify-content-between">
+                                            <span>${region}:</span>
+                                            <strong>${count} teams</strong>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <h6>Tournament Stats</h6>
+                                    <div class="d-flex justify-content-between">
+                                        <span>Total Rounds:</span>
+                                        <strong>${result.total_rounds}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span>BO1 Matches:</span>
+                                        <strong>${result.round_results ? result.round_results.reduce((sum, round) => sum + round.matches.filter(m => m.best_of === 1).length, 0) : 0}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span>BO3 Matches:</span>
+                                        <strong>${result.round_results ? result.round_results.reduce((sum, round) => sum + round.matches.filter(m => m.best_of === 3).length, 0) : 0}</strong>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <h6>Swiss Format</h6>
+                                    <small class="text-muted">
+                                        • BO1 for regular matches<br>
+                                        • BO3 for elimination/advancement<br>
+                                        • First to 3 wins qualifies<br>
+                                        • First to 3 losses eliminated
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Schedule and Scores -->
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4><i class="fas fa-calendar-alt"></i> Swiss Stage Complete Results</h4>
+                                <small class="text-muted">Total Rounds: ${result.total_rounds} | Format: BO1 + BO3 Elimination</small>
+                            </div>
+                            <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                                ${scheduleHtml}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.style.display = 'block';
+        }
+
+        function displayMultipleSwissResults(result) {
+            const container = document.getElementById('results-container');
+
+            // Sort teams by qualification rate (qualification_stats is already an array)
+            const sortedTeams = result.qualification_stats || [];
+
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h4><i class="fas fa-chart-bar"></i> Swiss Stage Analysis (${result.num_simulations} simulations)</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h5>Team Qualification Rates</h5>
+                                <div class="row">
+                                    ${sortedTeams.map(teamStat => `
+                                        <div class="col-md-6 mb-2">
+                                            <div class="team-card ${teamStat.percentage > 50 ? 'qualified' : 'eliminated'}">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <strong>${teamStat.team}</strong>
+                                                        <span class="region-badge region-${getTeamRegion(teamStat.team)}">${getTeamRegion(teamStat.team)}</span>
+                                                    </div>
+                                                    <div class="record-display">${teamStat.percentage.toFixed(1)}%</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <h5>Regional Analysis</h5>
+                                ${(() => {
+                                    const regionalStats = {};
+                                    sortedTeams.forEach(teamStat => {
+                                        const region = getTeamRegion(teamStat.team);
+                                        if (!regionalStats[region]) {
+                                            regionalStats[region] = { total: 0, avgRate: 0 };
+                                        }
+                                        regionalStats[region].total += 1;
+                                        regionalStats[region].avgRate += teamStat.percentage;
+                                    });
+                                    
+                                    return Object.entries(regionalStats).map(([region, stats]) => `
+                                        <div class="stat-card mb-2">
+                                            <h6>${region}</h6>
+                                            <div class="h5">${(stats.avgRate / stats.total).toFixed(1)}%</div>
+                                            <small class="text-muted">avg qualification rate</small>
+                                        </div>
+                                    `).join('');
+                                })()}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.style.display = 'block';
+        }
+
+        function getTeamRegion(team) {
+            const regions = {
+                'Bilibili Gaming': 'LPL', 'Top Esports': 'LPL', 'Invictus Gaming': 'LPL', 'Anyone s Legend': 'LPL',
+                'Gen.G eSports': 'LCK', 'Hanwha Life eSports': 'LCK', 'KT Rolster': 'LCK', 'T1': 'LCK',
+                'G2 Esports': 'LEC', 'Fnatic': 'LEC', 'Movistar KOI': 'LEC',
+                'FlyQuest': 'LTA', '100 Thieves': 'LTA', 'Vivo Keyd Stars': 'LTA',
+                'PSG Talon': 'PCS', 'CTBC Flying Oyster': 'PCS', 'Team Secret Whales': 'PCS'
+            };
+            return regions[team] || 'Unknown';
+        }
+
+        function getRegionalBreakdown(teams) {
+            const breakdown = {};
+            teams.forEach(team => {
+                const region = getTeamRegion(team);
+                breakdown[region] = (breakdown[region] || 0) + 1;
+            });
+            return breakdown;
+        }
+
+
+
+        function showLoading() {
+            document.getElementById('simulation-loading').style.display = 'block';
+            document.getElementById('results-container').style.display = 'none';
+        }
+
+        function hideLoading() {
+            document.getElementById('simulation-loading').style.display = 'none';
+        }
+
+        function showError(message) {
+            const container = document.getElementById('results-container');
+            container.innerHTML = `<div class="alert alert-danger">Error: ${message}</div>`;
+            container.style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>

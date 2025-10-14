@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bracket Debug Test</title>
+    <style>
+        .elimination-bracket { margin: 20px; }
+        .bracket-match { border: 1px solid #ccc; margin: 10px; padding: 10px; }
+        .team-slot { padding: 5px; margin: 2px; }
+        .winner { background-color: #90EE90; }
+        .loser { background-color: #FFB6C1; }
+        .match-score { font-weight: bold; color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Bracket Debug Test</h1>
+    <div id="debug-output"></div>
+    <div class="elimination-bracket"></div>
+
+    <script src="static/js/app.js"></script>
+    <script>
+        // Test data from the actual API response
+        const testData = {
+            "quarterfinals": [
+                {
+                    "loser": "Anyone s Legend",
+                    "match": ["T1", "Anyone s Legend"],
+                    "score": "3-2",
+                    "winner": "T1"
+                },
+                {
+                    "loser": "Hanwha Life eSports", 
+                    "match": ["Gen.G eSports", "Hanwha Life eSports"],
+                    "score": "3-1",
+                    "winner": "Gen.G eSports"
+                },
+                {
+                    "loser": "Movistar KOI",
+                    "match": ["Bilibili Gaming", "Movistar KOI"],
+                    "score": "3-0", 
+                    "winner": "Bilibili Gaming"
+                },
+                {
+                    "loser": "Top Esports",
+                    "match": ["Fnatic", "Top Esports"],
+                    "score": "3-2",
+                    "winner": "Fnatic"
+                }
+            ],
+            "semifinals": [
+                {
+                    "loser": "Bilibili Gaming",
+                    "match": ["T1", "Bilibili Gaming"],
+                    "score": "3-0",
+                    "winner": "T1"
+                },
+                {
+                    "loser": "Gen.G eSports",
+                    "match": ["Gen.G eSports", "Fnatic"],
+                    "score": "1-3",
+                    "winner": "Fnatic"
+                }
+            ],
+            "finals": {
+                "loser": "Fnatic",
+                "match": ["T1", "Fnatic"],
+                "score": "3-0",
+                "winner": "T1"
+            },
+            "champion": "T1"
+        };
+
+        console.log('Test data:', testData);
+
+        try {
+            const bracket = new HierarchicalBracket(testData);
+            console.log('Bracket created successfully');
+            
+            const result = bracket.renderBracket('.elimination-bracket');
+            console.log('Bracket rendered successfully');
+            
+            document.getElementById('debug-output').innerHTML = '<p style="color: green;">✓ Bracket rendered successfully!</p>';
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('debug-output').innerHTML = '<p style="color: red;">✗ Error: ' + error.message + '</p>';
+        }
+    </script>
+</body>
+</html>

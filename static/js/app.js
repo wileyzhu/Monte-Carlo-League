@@ -1893,3 +1893,5 @@ class TournamentSimulator {
 document.addEventListener('DOMContentLoaded', () => {
     new TournamentSimulator();
 });
+
+// Main Tournament Simulator Class
