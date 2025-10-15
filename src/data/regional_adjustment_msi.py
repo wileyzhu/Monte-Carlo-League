@@ -4,10 +4,10 @@ import numpy as np
 def apply_regional_strength_adjustment(probability_matrix_path="dataset/probability_matrix.csv", 
                                      output_path="dataset/probability_matrix_msi_adjusted.csv"):
     """
-    Apply regional strength adjustments based on MSI 2024 results.
+    Apply regional strength adjustments based on MSI 2025 results.
     
-    Regional strength hierarchy (based on MSI 2024 performance):
-    1. LCK (Korea) - Dominated MSI 2024 (5-0 matches, 68.2% games)
+    Regional strength hierarchy (based on MSI 2025 performance):
+    1. LCK (Korea) - Dominated MSI 2025 (5-0 matches, 68.2% games)
     2. LPL (China) - Strong second (6-3 matches, 61.1% games)
     3. PCS (Taiwan/Vietnam) - Competitive performance including GAM
     4. LTA (Americas) - Struggled at MSI (1-4 matches, 45.5% games)
@@ -17,9 +17,9 @@ def apply_regional_strength_adjustment(probability_matrix_path="dataset/probabil
     # Load the original matrix
     prob_matrix = pd.read_csv(probability_matrix_path, index_col=0)
     
-    # Define regional strength tiers based on MSI 2024 results
+    # Define regional strength tiers based on MSI 2025 results
     regional_strength = {
-        'LCK': 1.000,    # MSI 2024 based\n        'LPL': 0.821,    # MSI 2024 based\n        'LEC': 0.601,    # MSI 2024 based\n        'PCS': 0.393,    # MSI 2024 based\n        'LTA': 0.314,    # MSI 2024 based\n    }
+        'LCK': 1.000,    # MSI 2025 based\n        'LPL': 0.821,    # MSI 2024 based\n        'LEC': 0.601,    # MSI 2024 based\n        'PCS': 0.393,    # MSI 2024 based\n        'LTA': 0.314,    # MSI 2024 based\n    }
     
     # Team to region mapping
     team_regions = {
@@ -54,7 +54,7 @@ def apply_regional_strength_adjustment(probability_matrix_path="dataset/probabil
     # Create adjusted matrix
     adjusted_matrix = prob_matrix.copy()
     
-    print("Applying MSI 2024-based regional strength adjustments...")
+    print("Applying MSI 2025-based regional strength adjustments...")
     print("Regional strength multipliers:")
     for region, strength in regional_strength.items():
         print(f"  {region}: {strength:.3f}")

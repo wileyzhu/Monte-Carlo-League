@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Setup script for Worlds 2024 Tournament Simulator Web App
+Setup script for Worlds 2025 Tournament Simulator Web App
 """
 
 import subprocess
@@ -61,7 +61,7 @@ def check_data_files():
 
 def main():
     """Main setup function"""
-    print("🏆 Setting up Worlds 2024 Tournament Simulator Web App")
+    print("🏆 Setting up Worlds 2025 Tournament Simulator Web App")
     print("=" * 60)
     
     # Install requirements

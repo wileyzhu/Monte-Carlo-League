@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Play-in Stage Simulation provides detailed match analysis and simulation capabilities for the crucial play-in match between T1 and Invictus Gaming at Worlds 2024.
+The Play-in Stage Simulation provides detailed match analysis and simulation capabilities for the crucial play-in match between T1 and Invictus Gaming at Worlds 2025.
 
 ## Features
 

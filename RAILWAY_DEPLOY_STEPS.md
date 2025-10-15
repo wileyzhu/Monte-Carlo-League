@@ -98,3 +98,35 @@ After deployment, you'll have:
 - Easy updates via Git push
 
 **Your app will work perfectly on Railway!** 🚂
+
+---
+
+## 🌐 Custom Domain Setup (Optional)
+
+### After Deployment
+1. **Buy a domain** (suggestions: `worldssim.com`, `lolworlds.app`, `tournamentpro.com`)
+2. **In Railway dashboard**:
+   - Go to your project → Settings → Domains
+   - Click "Custom Domain"
+   - Enter your domain name
+3. **Configure DNS** at your domain registrar:
+   ```
+   Type: CNAME
+   Name: www (or @)
+   Value: your-app.railway.app
+   ```
+4. **Wait for DNS propagation** (24-48 hours)
+5. **SSL is automatic** - Railway handles HTTPS certificates!
+
+### Domain Registrar Recommendations
+- **Namecheap**: $8-12/year, developer-friendly
+- **Porkbun**: $7-10/year, great pricing
+- **Cloudflare**: At-cost pricing, excellent features
+
+### Professional Domain Ideas
+- `worldssim.com` - Direct and memorable
+- `tournament.yourname.com` - Personal branding
+- `esportssim.net` - Broader esports focus
+- `montecarloleague.com` - Technical reference
+
+**Cost**: ~$10/year for domain + Railway hosting (free tier available)

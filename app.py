@@ -7,7 +7,7 @@ import uuid
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = 'worlds2024_simulation_key'
+app.secret_key = 'worlds2025_simulation_key'
 
 # Global tournament instance
 tournament = None

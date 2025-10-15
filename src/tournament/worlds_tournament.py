@@ -332,7 +332,7 @@ class WorldsTournament:
             Complete tournament results
         """
         if verbose:
-            print("WORLDS 2024 TOURNAMENT SIMULATION")
+            print("WORLDS 2025 TOURNAMENT SIMULATION")
             print("=" * 60)
         
         # Run Play-In between Invictus Gaming and T1

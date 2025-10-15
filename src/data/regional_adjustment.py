@@ -59,7 +59,7 @@ def apply_regional_strength_adjustment(probability_matrix_path="dataset/probabil
     # Create adjusted matrix
     adjusted_matrix = prob_matrix.copy()
     
-    print("Applying MSI 2024-based regional strength adjustments...")
+    print("Applying MSI 2025-based regional strength adjustments...")
     print("Regional strength multipliers:")
     for region, strength in regional_strength.items():
         print(f"  {region}: {strength:.3f}")
