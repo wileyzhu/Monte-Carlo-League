@@ -1,68 +1,42 @@
 # Cloud Deployment Guide for Worlds Tournament Simulator
 
-## 1. Heroku (Free/Easy) ⭐ RECOMMENDED
+## 1. Railway (Free Credit) ⭐ RECOMMENDED
 
 ### Prerequisites
 - Git installed
-- Heroku CLI installed: https://devcenter.heroku.com/articles/heroku-cli
+- GitHub account
 
 ### Quick Deploy Steps
 
-1. **Login to Heroku**
+1. **Visit Railway**
+   - Go to https://railway.app
+   - Sign up with GitHub
+
+2. **Deploy from GitHub**
+   - Click "Deploy from GitHub repo"
+   - Select your repository
+   - Railway auto-detects Python and deploys!
+
+3. **Alternative: CLI Deploy**
    ```bash
-   heroku login
+   npm install -g @railway/cli
+   railway login
+   railway deploy
    ```
-
-2. **Create Heroku App**
-   ```bash
-   heroku create your-worlds-simulator
-   ```
-
-3. **Deploy**
-   ```bash
-   git add .
-   git commit -m "Deploy to Heroku"
-   git push heroku main
-   ```
-
-4. **Open Your App**
-   ```bash
-   heroku open
-   ```
-
-### Files Created for Heroku
-- `Procfile` - Tells Heroku how to run your app
-- `runtime.txt` - Specifies Python version
-- Updated `app.py` - Uses PORT environment variable
-
-### Heroku Features
-- ✅ Free tier available
-- ✅ Automatic HTTPS
-- ✅ Easy scaling
-- ✅ Built-in monitoring
-- ✅ Custom domain support
-
----
-
-## 2. Railway (Modern Alternative)
-
-### Quick Deploy
-1. Visit https://railway.app
-2. Connect your GitHub repository
-3. Railway auto-detects Python and deploys
-4. No configuration files needed!
 
 ### Railway Features
-- ✅ $5/month free credit
-- ✅ Faster than Heroku
-- ✅ Better developer experience
-- ✅ Automatic deployments from Git
+- ✅ $5 free credit monthly (no credit card required)
+- ✅ Faster deployments than Heroku
+- ✅ Automatic HTTPS
+- ✅ Built-in monitoring
+- ✅ Easy environment variables
+- ✅ Custom domains
 
 ---
 
-## 3. Render (Free Tier)
+## 2. Render (Free Tier)
 
-### Deploy Steps
+### Quick Deploy
 1. Visit https://render.com
 2. Connect GitHub repository
 3. Choose "Web Service"
@@ -71,42 +45,47 @@
    - **Start Command:** `python app.py`
 
 ### Render Features
-- ✅ Free tier (with limitations)
+- ✅ Free tier (750 hours/month)
 - ✅ Automatic SSL
 - ✅ Global CDN
 - ✅ Easy custom domains
+- ✅ No credit card required
 
 ---
 
-## 4. Vercel (Serverless)
+## 3. Vercel (Serverless Free Tier)
 
-### Setup
+### Deploy Steps
 1. Install Vercel CLI: `npm i -g vercel`
-2. Create `vercel.json`:
-   ```json
-   {
-     "version": 2,
-     "builds": [
-       {
-         "src": "app.py",
-         "use": "@vercel/python"
-       }
-     ],
-     "routes": [
-       {
-         "src": "/(.*)",
-         "dest": "app.py"
-       }
-     ]
-   }
-   ```
-3. Deploy: `vercel --prod`
+2. Deploy: `vercel --prod`
+3. The `vercel.json` file is already configured!
 
 ### Vercel Features
 - ✅ Generous free tier
 - ✅ Serverless (scales to zero)
 - ✅ Global edge network
 - ✅ Instant deployments
+- ✅ No credit card required
+
+---
+
+## 4. Heroku (Paid Only)
+
+### Setup
+1. **Account Verification Required**: Must add credit card
+2. **Minimum Cost**: $7/month per dyno
+3. Deploy steps:
+   ```bash
+   heroku create your-app-name
+   git push heroku main
+   ```
+
+### Heroku Features
+- ❌ No free tier (discontinued Nov 2022)
+- ✅ Mature platform
+- ✅ Extensive add-ons
+- ✅ Easy scaling
+- 💰 Starts at $7/month
 
 ---
 
@@ -192,11 +171,11 @@ Set these if needed:
 
 | Platform | Free Tier | Paid Starting | Best For |
 |----------|-----------|---------------|----------|
-| Heroku | 550 hours/month | $7/month | Beginners |
-| Railway | $5 credit/month | $5/month | Modern apps |
-| Render | 750 hours/month | $7/month | Static + API |
-| Vercel | Generous limits | $20/month | Serverless |
+| Railway | $5 credit/month | $5/month | Modern apps, beginners |
+| Render | 750 hours/month | $7/month | Traditional hosting |
+| Vercel | Generous limits | $20/month | Serverless apps |
+| Heroku | ❌ None | $7/month | Enterprise/legacy |
 | Cloud Run | 2M requests/month | Pay-per-use | Variable traffic |
 | App Runner | Pay-per-use | $0.007/hour | AWS ecosystem |
 
-**Recommendation**: Start with Heroku or Railway for simplicity, then migrate to Cloud Run or Vercel for better performance/cost as you scale.
+**Recommendation**: Start with Railway for the easiest experience, or Render for traditional hosting. Vercel is great for serverless. Avoid Heroku unless you need their specific features and don't mind paying.

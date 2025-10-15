@@ -1,19 +1,22 @@
-# League of Legends Tournament Prediction System
+# 🏆 Worlds 2025 Tournament Simulator
 
-A comprehensive tournament simulation system using Bayesian AR(3) models and regional strength adjustments. Features a web interface for interactive bracket visualization and Monte Carlo simulations.
+A realistic League of Legends World Championship simulator using advanced statistical modeling and MSI 2025 performance data.
 
 ## 🚀 Quick Start
 
-### Web Application
+### Local Development
 ```bash
+git clone <repository-url>
+cd Monte_Carlo
+pip install -r requirements.txt
 python app.py
 ```
-Visit `http://localhost:3000` to access the interactive web interface.
+Open http://localhost:3000
 
-### Command Line Simulation
-```bash
-python src/tournament/worlds_tournament.py
-```
+### Deploy to Railway (Recommended)
+1. Go to https://railway.app
+2. Connect your GitHub repository  
+3. Deploy automatically - no configuration needed!
 
 ## 📁 Project Structure
 
