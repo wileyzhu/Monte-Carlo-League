@@ -45,10 +45,10 @@ class WorldsTournament:
             '100 Thieves': 'LTA',
             'Vivo Keyd Stars': 'LTA',  # LAT region
             
-            # PCS teams (TW/VN)
-            'PSG Talon': 'PCS',
-            'CTBC Flying Oyster': 'PCS',
-            'Team Secret Whales': 'PCS'   # VN region
+            # LCP teams (TW/VN)
+            'PSG Talon': 'LCP',
+            'CTBC Flying Oyster': 'LCP',
+            'Team Secret Whales': 'LCP'   # VN region
         }
         
     def get_win_probability(self, team1, team2):
@@ -552,45 +552,56 @@ class WorldsTournament:
         }
     
     def _continue_swiss_from_records(self, swiss_teams, current_records):
-        """Continue Swiss stage from current team records"""
-        # Create seed groups
-        seed_groups = {}
-        for i, team in enumerate(swiss_teams):
-            if i < 5:
-                seed_groups[team] = 0
-            elif i < 11:
-                seed_groups[team] = 1
-            else:
-                seed_groups[team] = 2
+        """Continue Swiss stage from current team records using manual simulation"""
+        # Make a copy of current records to work with
+        records = {team: record.copy() for team, record in current_records.items()}
         
-        # Create probability matrix
-        n_teams = len(swiss_teams)
-        win_probs = np.zeros((n_teams, n_teams))
-        for i, team1 in enumerate(swiss_teams):
-            for j, team2 in enumerate(swiss_teams):
-                if i == j:
-                    win_probs[i, j] = 0.5
+        # Continue Swiss rounds until all teams are eliminated or qualified
+        round_num = 2  # Starting from Round 2 (Round 1 completed)
+        
+        while not all(wins >= 3 or losses >= 3 for wins, losses in records.values()):
+            # Group teams by their current record
+            teams_by_record = {}
+            for team, (wins, losses) in records.items():
+                if wins < 3 and losses < 3:  # Team still active
+                    record_key = f"{wins}-{losses}"
+                    if record_key not in teams_by_record:
+                        teams_by_record[record_key] = []
+                    teams_by_record[record_key].append(team)
+            
+            # Pair teams within same record groups (proper Swiss pairing)
+            round_matches = []
+            for record_group, teams in teams_by_record.items():
+                random.shuffle(teams)
+                for i in range(0, len(teams) - 1, 2):
+                    if i + 1 < len(teams):
+                        round_matches.append((teams[i], teams[i + 1]))
+            
+            # Simulate matches for this round
+            for team1, team2 in round_matches:
+                win_prob = self.get_win_probability(team1, team2)
+                
+                if random.random() < win_prob:
+                    winner, loser = team1, team2
                 else:
-                    win_probs[i, j] = self.get_win_probability(team1, team2)
+                    winner, loser = team2, team1
+                
+                # Update records
+                records[winner][0] += 1  # Add win
+                records[loser][1] += 1   # Add loss
+            
+            round_num += 1
+            if round_num > 10:  # Safety break to prevent infinite loops
+                break
         
-        # Create Swiss tournament with current records
-        swiss_tournament = SwissTournament(swiss_teams, seed_groups, self.team_regions, win_probs)
+        # Determine final results - teams with 3+ wins qualify
+        qualified = [team for team, (wins, losses) in records.items() if wins >= 3]
+        eliminated = [team for team, (wins, losses) in records.items() if wins < 3]
         
-        # Set current records
-        for team, record in current_records.items():
-            if team in swiss_tournament.records:
-                swiss_tournament.records[team] = record
-        
-        # Continue simulation until completion
-        while not all(w >= 3 or l >= 3 for w, l in swiss_tournament.records.values()):
-            swiss_tournament.swiss_round()
-        
-        # Determine final results
-        team_records = [(team, wins, losses) for team, (wins, losses) in swiss_tournament.records.items()]
-        team_records.sort(key=lambda x: (-x[1], x[2]))
-        
-        qualified = [team for team, _, _ in team_records[:8]]
-        eliminated = [team for team, _, _ in team_records[8:]]
+        # Sort qualified teams by record (wins desc, losses asc) for proper seeding
+        qualified_with_records = [(team, records[team]) for team in qualified]
+        qualified_with_records.sort(key=lambda x: (-x[1][0], x[1][1]))
+        qualified = [team for team, _ in qualified_with_records]
         
         return qualified, eliminated
     
@@ -617,7 +628,13 @@ class WorldsTournament:
         elif len(qualified_teams) > 8:
             qualified_teams = qualified_teams[:8]
             
-        seed_groups = [qualified_teams[:3], qualified_teams[3:6], qualified_teams[6:8]]
+        # Create proper seed groups for elimination bracket
+        # high: 2 teams, mid: 3 teams, low: 3 teams (total 8)
+        seed_groups = [
+            qualified_teams[:2],    # high (2 teams)
+            qualified_teams[2:5],   # mid (3 teams) 
+            qualified_teams[5:8]    # low (3 teams)
+        ]
         
         # Run elimination
         elimination_tournament = Elimination(qualified_teams, seed_groups, win_probs)

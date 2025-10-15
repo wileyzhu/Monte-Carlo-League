@@ -61,7 +61,7 @@ body {
 .region-lpl { background-color: #4ECDC4; }
 .region-lec { background-color: #45B7D1; }
 .region-lta { background-color: #96CEB4; }
-.region-pcs { background-color: #FFEAA7; }
+.region-lcp { background-color: #FFEAA7; }
 
 .champion-highlight {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

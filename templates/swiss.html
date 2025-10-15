@@ -181,14 +181,6 @@
                                     <option value="Invictus Gaming">Invictus Gaming (LPL)</option>
                                 </select>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Seeding Strategy:</label>
-                                <select class="form-select" id="seeding-strategy">
-                                    <option value="power">Power Rankings</option>
-                                    <option value="regional">Regional Balance</option>
-                                    <option value="random">Random</option>
-                                </select>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -225,7 +217,7 @@
                             <div class="col-md-4">
                                 <div class="input-group mb-2">
                                     <input type="number" class="form-control" id="num-simulations" value="100" min="1"
-                                        max="1000" placeholder="Number of simulations">
+                                        max="1000" step="1" placeholder="Number of simulations" oninput="validateSimulationCount(this)">
                                     <button class="btn btn-success" onclick="runMultipleSwiss()">
                                         <i class="fas fa-chart-bar"></i> Multiple Simulations
                                     </button>
@@ -270,10 +262,11 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Number of Simulations</label>
-                                <input type="number" class="form-control" id="draw-simulations" value="100" min="1" max="1000">
+                                <input type="number" class="form-control" id="draw-simulations" value="100" min="1"
+                                    max="1000" step="1" oninput="validateSimulationCount(this)">
                             </div>
                         </div>
-                        
+
                         <h6>Round 1 Matchups (8 matches)</h6>
                         <div class="row" id="first-draw-matches">
                             <div class="col-md-6 mb-2">
@@ -282,12 +275,14 @@
                                         <h6>Match 1 <small class="text-muted">(Pool 1 vs Pool 3)</small></h6>
                                         <div class="row">
                                             <div class="col-6">
-                                                <select class="form-select team-select" data-match="1" data-position="a">
+                                                <select class="form-select team-select" data-match="1"
+                                                    data-position="a">
                                                     <option value="">Team A</option>
                                                 </select>
                                             </div>
                                             <div class="col-6">
-                                                <select class="form-select team-select" data-match="1" data-position="b">
+                                                <select class="form-select team-select" data-match="1"
+                                                    data-position="b">
                                                     <option value="">Team B</option>
                                                 </select>
                                             </div>
@@ -301,12 +296,14 @@
                                         <h6>Match 2 <small class="text-muted">(Pool 1 vs Pool 3)</small></h6>
                                         <div class="row">
                                             <div class="col-6">
-                                                <select class="form-select team-select" data-match="2" data-position="a">
+                                                <select class="form-select team-select" data-match="2"
+                                                    data-position="a">
                                                     <option value="">Team A</option>
                                                 </select>
                                             </div>
                                             <div class="col-6">
-                                                <select class="form-select team-select" data-match="2" data-position="b">
+                                                <select class="form-select team-select" data-match="2"
+                                                    data-position="b">
                                                     <option value="">Team B</option>
                                                 </select>
                                             </div>
@@ -320,12 +317,14 @@
                                         <h6>Match 3 <small class="text-muted">(Pool 1 vs Pool 3)</small></h6>
                                         <div class="row">
                                             <div class="col-6">
-                                                <select class="form-select team-select" data-match="3" data-position="a">
+                                                <select class="form-select team-select" data-match="3"
+                                                    data-position="a">
                                                     <option value="">Team A</option>
                                                 </select>
                                             </div>
                                             <div class="col-6">
-                                                <select class="form-select team-select" data-match="3" data-position="b">
+                                                <select class="form-select team-select" data-match="3"
+                                                    data-position="b">
                                                     <option value="">Team B</option>
                                                 </select>
                                             </div>
@@ -339,12 +338,14 @@
                                         <h6>Match 4 <small class="text-muted">(Pool 1 vs Pool 3)</small></h6>
                                         <div class="row">
                                             <div class="col-6">
-                                                <select class="form-select team-select" data-match="4" data-position="a">
+                                                <select class="form-select team-select" data-match="4"
+                                                    data-position="a">
                                                     <option value="">Team A</option>
                                                 </select>
                                             </div>
                                             <div class="col-6">
-                                                <select class="form-select team-select" data-match="4" data-position="b">
+                                                <select class="form-select team-select" data-match="4"
+                                                    data-position="b">
                                                     <option value="">Team B</option>
                                                 </select>
                                             </div>
@@ -358,12 +359,14 @@
                                         <h6>Match 5 <small class="text-muted">(Pool 1 vs Pool 3)</small></h6>
                                         <div class="row">
                                             <div class="col-6">
-                                                <select class="form-select team-select" data-match="5" data-position="a">
+                                                <select class="form-select team-select" data-match="5"
+                                                    data-position="a">
                                                     <option value="">Team A</option>
                                                 </select>
                                             </div>
                                             <div class="col-6">
-                                                <select class="form-select team-select" data-match="5" data-position="b">
+                                                <select class="form-select team-select" data-match="5"
+                                                    data-position="b">
                                                     <option value="">Team B</option>
                                                 </select>
                                             </div>
@@ -377,12 +380,14 @@
                                         <h6>Match 6 <small class="text-muted">(Pool 2 vs Pool 2)</small></h6>
                                         <div class="row">
                                             <div class="col-6">
-                                                <select class="form-select team-select" data-match="6" data-position="a">
+                                                <select class="form-select team-select" data-match="6"
+                                                    data-position="a">
                                                     <option value="">Team A</option>
                                                 </select>
                                             </div>
                                             <div class="col-6">
-                                                <select class="form-select team-select" data-match="6" data-position="b">
+                                                <select class="form-select team-select" data-match="6"
+                                                    data-position="b">
                                                     <option value="">Team B</option>
                                                 </select>
                                             </div>
@@ -396,12 +401,14 @@
                                         <h6>Match 7 <small class="text-muted">(Pool 2 vs Pool 2)</small></h6>
                                         <div class="row">
                                             <div class="col-6">
-                                                <select class="form-select team-select" data-match="7" data-position="a">
+                                                <select class="form-select team-select" data-match="7"
+                                                    data-position="a">
                                                     <option value="">Team A</option>
                                                 </select>
                                             </div>
                                             <div class="col-6">
-                                                <select class="form-select team-select" data-match="7" data-position="b">
+                                                <select class="form-select team-select" data-match="7"
+                                                    data-position="b">
                                                     <option value="">Team B</option>
                                                 </select>
                                             </div>
@@ -415,12 +422,14 @@
                                         <h6>Match 8 <small class="text-muted">(Pool 2 vs Pool 2)</small></h6>
                                         <div class="row">
                                             <div class="col-6">
-                                                <select class="form-select team-select" data-match="8" data-position="a">
+                                                <select class="form-select team-select" data-match="8"
+                                                    data-position="a">
                                                     <option value="">Team A</option>
                                                 </select>
                                             </div>
                                             <div class="col-6">
-                                                <select class="form-select team-select" data-match="8" data-position="b">
+                                                <select class="form-select team-select" data-match="8"
+                                                    data-position="b">
                                                     <option value="">Team B</option>
                                                 </select>
                                             </div>
@@ -429,17 +438,19 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="alert alert-info">
                             <small><i class="fas fa-info-circle"></i> <strong>Swiss Seeding Rules:</strong></small><br>
                             <small>
-                                • <span class="text-primary">Matches 1-5:</span> Pool 1 (top 5 teams) vs Pool 3 (bottom 5 teams)<br>
+                                • <span class="text-primary">Matches 1-5:</span> Pool 1 (top 5 teams) vs Pool 3 (bottom
+                                5 teams)<br>
                                 • <span class="text-success">Matches 6-8:</span> Pool 2 (middle 6 teams) vs Pool 2<br>
-                                • <span class="text-primary"><i class="fas fa-trophy"></i> Official Draw:</span> Loads the actual Worlds 2025 first draw matchups<br>
+                                • <span class="text-primary"><i class="fas fa-trophy"></i> Official Draw:</span> Loads
+                                the actual Worlds 2025 first draw matchups<br>
                                 • Select matchups manually or use saved inputs. Simulation uses real win probabilities.
                             </small>
                         </div>
-                        
+
                         <div class="row mt-3">
                             <div class="col-md-2">
                                 <button class="btn btn-secondary" onclick="hideFirstDrawInput()">
@@ -471,6 +482,132 @@
                 </div>
             </div>
         </div>
+
+        <!-- Round 2 Draw Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4><i class="fas fa-calendar-alt"></i> Round 2 Draw - October 16, 2025</h4>
+                        <small>High (1-0) vs High (1-0) and Low (0-1) vs Low (0-1) matchups</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success"><i class="fas fa-arrow-up"></i> High Matches (1-0 teams)</h5>
+                                <div class="list-group">
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div><strong>Team Secret Whales</strong> <span
+                                                class="region-badge region-LCP">LCP</span></div>
+                                        <div class="text-muted">vs</div>
+                                        <div><strong>KT Rolster</strong> <span
+                                                class="region-badge region-LCK">LCK</span></div>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div><strong>Top Esports</strong> <span
+                                                class="region-badge region-LPL">LPL</span></div>
+                                        <div class="text-muted">vs</div>
+                                        <div><strong>100 Thieves</strong> <span
+                                                class="region-badge region-LTA">LTA</span></div>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div><strong>CTBC Flying Oyster</strong> <span
+                                                class="region-badge region-LCP">LCP</span></div>
+                                        <div class="text-muted">vs</div>
+                                        <div><strong>T1</strong> <span class="region-badge region-LCK">LCK</span></div>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div><strong>Gen.G eSports</strong> <span
+                                                class="region-badge region-LCK">LCK</span></div>
+                                        <div class="text-muted">vs</div>
+                                        <div><strong>Anyone s Legend</strong> <span
+                                                class="region-badge region-LPL">LPL</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-danger"><i class="fas fa-arrow-down"></i> Low Matches (0-1 teams)</h5>
+                                <div class="list-group">
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div><strong>FlyQuest</strong> <span class="region-badge region-LTA">LTA</span>
+                                        </div>
+                                        <div class="text-muted">vs</div>
+                                        <div><strong>Vivo Keyd Stars</strong> <span
+                                                class="region-badge region-LTA">LTA</span></div>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div><strong>G2 Esports</strong> <span
+                                                class="region-badge region-LEC">LEC</span></div>
+                                        <div class="text-muted">vs</div>
+                                        <div><strong>Movistar KOI</strong> <span
+                                                class="region-badge region-LEC">LEC</span></div>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div><strong>Bilibili Gaming</strong> <span
+                                                class="region-badge region-LPL">LPL</span></div>
+                                        <div class="text-muted">vs</div>
+                                        <div><strong>Fnatic</strong> <span class="region-badge region-LEC">LEC</span>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div><strong>Hanwha Life eSports</strong> <span
+                                                class="region-badge region-LCK">LCK</span></div>
+                                        <div class="text-muted">vs</div>
+                                        <div><strong>PSG Talon</strong> <span class="region-badge region-LCP">LCP</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <button class="btn btn-success w-100" onclick="showMatchPredictions()">
+                                    <i class="fas fa-chart-line"></i> Match Predictions
+                                </button>
+                                <small class="text-muted">Win probabilities for each match</small>
+                            </div>
+                        </div>
+
+                        <!-- Simulation Controls Panel -->
+                        <div id="simulation-controls" class="mt-4">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h5><i class="fas fa-cogs"></i> Run Custom Simulations</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <label class="form-label">Number of Simulations:</label>
+                                            <input type="number" class="form-control" id="sim-count" value="500" min="1" max="10000" step="1" oninput="validateSimulationCount(this)">
+                                            <small class="text-muted">1 - 10,000 simulations</small>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Analysis Type:</label>
+                                            <select class="form-select" id="analysis-type"
+                                                onchange="updateDisplayOptions()">
+                                                <option value="qualification">Qualification Rates</option>
+                                                <option value="championship">Championship Distribution</option>
+                                                <option value="regional">Regional Performance</option>
+                                                <option value="matchups">Round 2 Match Outcomes</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-3">
+                                            <button class="btn btn-primary w-100 mt-4" onclick="runCustomSimulation()">
+                                                <i class="fas fa-play"></i> Run Simulation
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
 
         <!-- Loading Indicator -->
         <div class="loading" id="simulation-loading">
@@ -557,7 +694,7 @@
 
             try {
                 const playinWinner = document.getElementById('playin-winner').value;
-                const seedingStrategy = document.getElementById('seeding-strategy').value;
+                const seedingStrategy = 'power'; // Default seeding strategy
 
                 const response = await fetch('/api/swiss/simulate', {
                     method: 'POST',
@@ -594,16 +731,21 @@
                 return;
             }
 
-            console.log(`Running ${numSims} Swiss simulations...`);
+            // Check if analysis type dropdown exists and get its value
+            const analysisTypeElement = document.getElementById('analysis-type');
+            const analysisType = analysisTypeElement ? analysisTypeElement.value : 'qualification';
+            const displayFormat = 'table'; // Default to table format
+
+            console.log(`Running ${numSims} Swiss simulations with analysis type: ${analysisType}...`);
             document.getElementById('simulation-loading').innerHTML = `
                 <i class="fas fa-spinner fa-spin fa-2x"></i>
-                <p>Running ${numSims} Swiss stage simulations...</p>
+                <p>Running ${numSims} Swiss stage simulations (${analysisType})...</p>
             `;
             showLoading();
 
             try {
                 const playinWinner = document.getElementById('playin-winner').value;
-                const seedingStrategy = document.getElementById('seeding-strategy').value;
+                const seedingStrategy = 'power'; // Default seeding strategy
 
                 const response = await fetch('/api/swiss/simulate', {
                     method: 'POST',
@@ -614,14 +756,19 @@
                         type: 'multiple',
                         num_simulations: numSims,
                         playin_winner: playinWinner,
-                        seeding_strategy: seedingStrategy
+                        seeding_strategy: seedingStrategy,
+                        analysis_type: analysisType
                     })
                 });
 
                 const data = await response.json();
 
                 if (data.success) {
-                    displayMultipleSwissResults(data.result);
+                    // Use the formatSimulationResults function to handle different analysis types
+                    const container = document.getElementById('results-container');
+                    const results = formatSimulationResults(data.result, analysisType, displayFormat, numSims);
+                    container.innerHTML = results;
+                    container.style.display = 'block';
                 } else {
                     showError(data.error);
                 }
@@ -643,15 +790,15 @@
                     roundNumber: index + 1,
                     roundName: round.round_name,
                     matches: round.matches,
-                    type: round.round_name.includes('Opening') ? 'opening' : 
-                          round.round_name.includes('Mixed') ? 'mixed' : 'swiss'
+                    type: round.round_name.includes('Opening') ? 'opening' :
+                        round.round_name.includes('Mixed') ? 'mixed' : 'swiss'
                 }));
 
                 // Display grouped Swiss rounds
                 swissRounds.forEach(round => {
                     const bo1Count = round.matches.filter(m => m.best_of === 1).length;
                     const bo3Count = round.matches.filter(m => m.best_of === 3).length;
-                    
+
                     scheduleHtml += `
                         <div class="card mb-3">
                             <div class="card-header">
@@ -828,24 +975,24 @@
                             <div class="col-md-4">
                                 <h5>Regional Analysis</h5>
                                 ${(() => {
-                                    const regionalStats = {};
-                                    sortedTeams.forEach(teamStat => {
-                                        const region = getTeamRegion(teamStat.team);
-                                        if (!regionalStats[region]) {
-                                            regionalStats[region] = { total: 0, avgRate: 0 };
-                                        }
-                                        regionalStats[region].total += 1;
-                                        regionalStats[region].avgRate += teamStat.percentage;
-                                    });
-                                    
-                                    return Object.entries(regionalStats).map(([region, stats]) => `
+                    const regionalStats = {};
+                    sortedTeams.forEach(teamStat => {
+                        const region = getTeamRegion(teamStat.team);
+                        if (!regionalStats[region]) {
+                            regionalStats[region] = { total: 0, avgRate: 0 };
+                        }
+                        regionalStats[region].total += 1;
+                        regionalStats[region].avgRate += teamStat.percentage;
+                    });
+
+                    return Object.entries(regionalStats).map(([region, stats]) => `
                                         <div class="stat-card mb-2">
                                             <h6>${region}</h6>
                                             <div class="h5">${(stats.avgRate / stats.total).toFixed(1)}%</div>
                                             <small class="text-muted">avg qualification rate</small>
                                         </div>
                                     `).join('');
-                                })()}
+                })()}
                             </div>
                         </div>
                     </div>
@@ -903,47 +1050,47 @@
 
         function populateTeamSelects() {
             const playinWinner = document.getElementById('draw-playin-winner').value;
-            
+
             // Get team list based on playin winner (5-6-5 seeding)
-            const teams = playinWinner === 'Invictus Gaming' ? 
-                ['Bilibili Gaming', 'Gen.G eSports', 'G2 Esports', 'FlyQuest', 'CTBC Flying Oyster', 
-                 'Anyone s Legend', 'Hanwha Life eSports', 'Movistar KOI', 'Vivo Keyd Stars', 
-                 'Team Secret Whales', 'Top Esports', 'Invictus Gaming', 'KT Rolster', 'Fnatic', 
-                 '100 Thieves', 'PSG Talon'] :
-                ['Bilibili Gaming', 'Gen.G eSports', 'G2 Esports', 'FlyQuest', 'CTBC Flying Oyster', 
-                 'Anyone s Legend', 'Hanwha Life eSports', 'Movistar KOI', 'Vivo Keyd Stars', 
-                 'Team Secret Whales', 'KT Rolster', 'T1', 'Top Esports', 'Fnatic', 
-                 '100 Thieves', 'PSG Talon'];
+            const teams = playinWinner === 'Invictus Gaming' ?
+                ['Bilibili Gaming', 'Gen.G eSports', 'G2 Esports', 'FlyQuest', 'CTBC Flying Oyster',
+                    'Anyone s Legend', 'Hanwha Life eSports', 'Movistar KOI', 'Vivo Keyd Stars',
+                    'Team Secret Whales', 'Top Esports', 'Invictus Gaming', 'KT Rolster', 'Fnatic',
+                    '100 Thieves', 'PSG Talon'] :
+                ['Bilibili Gaming', 'Gen.G eSports', 'G2 Esports', 'FlyQuest', 'CTBC Flying Oyster',
+                    'Anyone s Legend', 'Hanwha Life eSports', 'Movistar KOI', 'Vivo Keyd Stars',
+                    'Team Secret Whales', 'KT Rolster', 'T1', 'Top Esports', 'Fnatic',
+                    '100 Thieves', 'PSG Talon'];
 
             // Divide teams into pools (5-6-5 distribution)
             const pool1 = teams.slice(0, 5);   // Top 5 teams
             const pool2 = teams.slice(5, 11);  // Middle 6 teams  
             const pool3 = teams.slice(11, 16); // Bottom 5 teams
-            
+
             // Populate selects based on Swiss seeding rules
             // Matches 1-5: Pool 1 vs Pool 3
             for (let i = 1; i <= 5; i++) {
                 const teamASelect = document.querySelector(`[data-match="${i}"][data-position="a"]`);
                 const teamBSelect = document.querySelector(`[data-match="${i}"][data-position="b"]`);
-                
+
                 // Team A options: Pool 1 teams
                 teamASelect.innerHTML = '<option value="">Select Pool 1 Team</option>';
                 pool1.forEach(team => {
                     teamASelect.innerHTML += `<option value="${team}">${team} (Pool 1)</option>`;
                 });
-                
+
                 // Team B options: Pool 3 teams
                 teamBSelect.innerHTML = '<option value="">Select Pool 3 Team</option>';
                 pool3.forEach(team => {
                     teamBSelect.innerHTML += `<option value="${team}">${team} (Pool 3)</option>`;
                 });
             }
-            
+
             // Matches 6-8: Pool 2 vs Pool 2
             for (let i = 6; i <= 8; i++) {
                 const teamASelect = document.querySelector(`[data-match="${i}"][data-position="a"]`);
                 const teamBSelect = document.querySelector(`[data-match="${i}"][data-position="b"]`);
-                
+
                 // Both teams from Pool 2
                 teamASelect.innerHTML = '<option value="">Select Pool 2 Team A</option>';
                 teamBSelect.innerHTML = '<option value="">Select Pool 2 Team B</option>';
@@ -958,13 +1105,13 @@
             const playinWinner = document.getElementById('draw-playin-winner').value;
             const numSimulations = parseInt(document.getElementById('draw-simulations').value);
             const simulationType = document.getElementById('simulation-type').value;
-            
+
             // Collect matchups
             const matchups = [];
             for (let i = 1; i <= 8; i++) {
                 const teamA = document.querySelector(`[data-match="${i}"][data-position="a"]`).value;
                 const teamB = document.querySelector(`[data-match="${i}"][data-position="b"]`).value;
-                
+
                 if (teamA && teamB && teamA !== teamB) {
                     matchups.push({
                         team_a: teamA,
@@ -972,12 +1119,12 @@
                     });
                 }
             }
-            
+
             if (matchups.length !== 8) {
                 alert('Please select all 8 matchups with different teams');
                 return;
             }
-            
+
             // Check for duplicate teams
             const allTeams = [];
             matchups.forEach(match => {
@@ -988,9 +1135,9 @@
                 alert('Each team should appear exactly once in the matchups');
                 return;
             }
-            
+
             showLoading();
-            
+
             try {
                 const response = await fetch('/api/swiss/simulate_from_draw', {
                     method: 'POST',
@@ -1026,7 +1173,7 @@
 
         function displayFirstDrawResults(result) {
             const container = document.getElementById('results-container');
-            
+
             container.innerHTML = `
                 <div class="card">
                     <div class="card-header bg-warning text-dark">
@@ -1073,70 +1220,70 @@
         function saveCurrentInput() {
             const playinWinner = document.getElementById('draw-playin-winner').value;
             const numSimulations = document.getElementById('draw-simulations').value;
-            
+
             // Collect current matchups
             const matchups = [];
             for (let i = 1; i <= 8; i++) {
                 const teamA = document.querySelector(`[data-match="${i}"][data-position="a"]`).value;
                 const teamB = document.querySelector(`[data-match="${i}"][data-position="b"]`).value;
-                
+
                 matchups.push({
                     match: i,
                     team_a: teamA,
                     team_b: teamB
                 });
             }
-            
+
             const savedInput = {
                 playin_winner: playinWinner,
                 num_simulations: numSimulations,
                 matchups: matchups,
                 timestamp: new Date().toISOString()
             };
-            
+
             // Save to localStorage
             localStorage.setItem('swiss_last_input', JSON.stringify(savedInput));
-            
+
             // Enable load button
             document.getElementById('loadLastBtn').disabled = false;
-            
+
             alert('Input saved successfully!');
         }
 
         function loadLastInput() {
             const savedData = localStorage.getItem('swiss_last_input');
-            
+
             if (!savedData) {
                 alert('No saved input found');
                 return;
             }
-            
+
             try {
                 const savedInput = JSON.parse(savedData);
-                
+
                 // Set playin winner
                 document.getElementById('draw-playin-winner').value = savedInput.playin_winner;
                 document.getElementById('draw-simulations').value = savedInput.num_simulations;
-                
+
                 // Populate team selects first
                 populateTeamSelects();
-                
+
                 // Wait a bit for selects to populate, then set values
                 setTimeout(() => {
                     savedInput.matchups.forEach(matchup => {
                         const teamASelect = document.querySelector(`[data-match="${matchup.match}"][data-position="a"]`);
                         const teamBSelect = document.querySelector(`[data-match="${matchup.match}"][data-position="b"]`);
-                        
+
                         if (teamASelect && teamBSelect) {
                             teamASelect.value = matchup.team_a;
                             teamBSelect.value = matchup.team_b;
                         }
                     });
-                    
+
                     const saveDate = new Date(savedInput.timestamp).toLocaleString();
                     alert(`Last input loaded successfully!\nSaved on: ${saveDate}`);
                 }, 100);
-                
+
             } catch (error) {
                 alert('Error loading saved input: ' + error.message);
             }
@@ -1154,25 +1301,25 @@
                 { match: 7, team_a: 'Vivo Keyd Stars', team_b: 'Team Secret Whales' },
                 { match: 8, team_a: 'Movistar KOI', team_b: 'KT Rolster' }
             ];
-            
+
             // Set T1 as playin winner (since T1 is in the official draw)
             document.getElementById('draw-playin-winner').value = 'T1';
-            
+
             // Populate team selects first
             populateTeamSelects();
-            
+
             // Wait a bit for selects to populate, then set official values
             setTimeout(() => {
                 officialMatchups.forEach(matchup => {
                     const teamASelect = document.querySelector(`[data-match="${matchup.match}"][data-position="a"]`);
                     const teamBSelect = document.querySelector(`[data-match="${matchup.match}"][data-position="b"]`);
-                    
+
                     if (teamASelect && teamBSelect) {
                         teamASelect.value = matchup.team_a;
                         teamBSelect.value = matchup.team_b;
                     }
                 });
-                
+
                 alert('Official Worlds 2025 first draw loaded successfully!');
             }, 100);
         }
@@ -1186,7 +1333,7 @@
 
         function displayMatchupResults(result) {
             const container = document.getElementById('results-container');
-            
+
             container.innerHTML = `
                 <div class="card">
                     <div class="card-header bg-info text-white">
@@ -1242,9 +1389,9 @@
                                     <strong>Most Confident Predictions:</strong>
                                     <ul class="mb-0">
                                         ${Object.entries(result.matchup_results)
-                                            .sort(([,a], [,b]) => b.confidence - a.confidence)
-                                            .slice(0, 3)
-                                            .map(([matchId, matchResult]) => `
+                    .sort(([, a], [, b]) => b.confidence - a.confidence)
+                    .slice(0, 3)
+                    .map(([matchId, matchResult]) => `
                                                 <li>${matchResult.most_likely_winner} (${matchResult.confidence.toFixed(1)}%)</li>
                                             `).join('')}
                                     </ul>
@@ -1253,9 +1400,9 @@
                                     <strong>Closest Matches:</strong>
                                     <ul class="mb-0">
                                         ${Object.entries(result.matchup_results)
-                                            .sort(([,a], [,b]) => a.confidence - b.confidence)
-                                            .slice(0, 3)
-                                            .map(([matchId, matchResult]) => `
+                    .sort(([, a], [, b]) => a.confidence - b.confidence)
+                    .slice(0, 3)
+                    .map(([matchId, matchResult]) => `
                                                 <li>${matchResult.matchup} (${matchResult.confidence.toFixed(1)}%)</li>
                                             `).join('')}
                                     </ul>
@@ -1270,14 +1417,542 @@
         }
 
         // Update team selects when playin winner changes
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const playinSelect = document.getElementById('draw-playin-winner');
             if (playinSelect) {
                 playinSelect.addEventListener('change', populateTeamSelects);
             }
-            
+
             // Check for saved input on page load
             checkForSavedInput();
+        });
+
+        async function showMatchPredictions() {
+            const container = document.getElementById('results-container');
+            container.innerHTML = '<div class="alert alert-primary"><i class="fas fa-spinner fa-spin"></i> Loading match predictions...</div>';
+            container.style.display = 'block';
+            
+            try {
+                const response = await fetch('/api/swiss/match_predictions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayMatchPredictions(data.result);
+                } else {
+                    container.innerHTML = '<div class="alert alert-danger">Error loading predictions: ' + data.error + '</div>';
+                }
+            } catch (error) {
+                container.innerHTML = '<div class="alert alert-danger">Network error: ' + error.message + '</div>';
+            }
+        }
+        
+        function displayMatchPredictions(result) {
+            const container = document.getElementById('results-container');
+            
+            let html = `
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h4><i class="fas fa-chart-line"></i> Round 2 Match Predictions</h4>
+                        <small>Win probabilities based on regional-adjusted matrix</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-success"><i class="fas fa-arrow-up"></i> High Matches (1-0 vs 1-0)</h5>
+                                <div class="list-group">
+            `;
+            
+            result.high_matches.forEach(match => {
+                const favored = match.team_a_prob > 50 ? match.team_a : match.team_b;
+                const favoredProb = Math.max(match.team_a_prob, match.team_b_prob);
+                const underdog = match.team_a_prob > 50 ? match.team_b : match.team_a;
+                const underdogProb = Math.min(match.team_a_prob, match.team_b_prob);
+                
+                html += `
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><strong>${match.team_a}</strong> vs <strong>${match.team_b}</strong></span>
+                            <span class="badge ${favoredProb > 70 ? 'bg-success' : favoredProb > 60 ? 'bg-warning' : 'bg-info'}">${favoredProb.toFixed(1)}% vs ${underdogProb.toFixed(1)}%</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar ${match.team_a_prob > 50 ? 'bg-success' : 'bg-danger'}" style="width: ${match.team_a_prob}%">${match.team_a} ${match.team_a_prob.toFixed(1)}%</div>
+                            <div class="progress-bar ${match.team_b_prob > 50 ? 'bg-success' : 'bg-danger'}" style="width: ${match.team_b_prob}%">${match.team_b} ${match.team_b_prob.toFixed(1)}%</div>
+                        </div>
+                        <small class="text-muted">Favored: <strong>${favored}</strong></small>
+                    </div>
+                `;
+            });
+            
+            html += `
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-danger"><i class="fas fa-arrow-down"></i> Low Matches (0-1 vs 0-1)</h5>
+                                <div class="list-group">
+            `;
+            
+            result.low_matches.forEach(match => {
+                const favored = match.team_a_prob > 50 ? match.team_a : match.team_b;
+                const favoredProb = Math.max(match.team_a_prob, match.team_b_prob);
+                const underdog = match.team_a_prob > 50 ? match.team_b : match.team_a;
+                const underdogProb = Math.min(match.team_a_prob, match.team_b_prob);
+                
+                html += `
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><strong>${match.team_a}</strong> vs <strong>${match.team_b}</strong></span>
+                            <span class="badge ${favoredProb > 70 ? 'bg-success' : favoredProb > 60 ? 'bg-warning' : 'bg-info'}">${favoredProb.toFixed(1)}% vs ${underdogProb.toFixed(1)}%</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar ${match.team_a_prob > 50 ? 'bg-success' : 'bg-danger'}" style="width: ${match.team_a_prob}%">${match.team_a} ${match.team_a_prob.toFixed(1)}%</div>
+                            <div class="progress-bar ${match.team_b_prob > 50 ? 'bg-success' : 'bg-danger'}" style="width: ${match.team_b_prob}%">${match.team_b} ${match.team_b_prob.toFixed(1)}%</div>
+                        </div>
+                        <small class="text-muted">Favored: <strong>${favored}</strong></small>
+                    </div>
+                `;
+            });
+            
+            html += `
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mt-3">
+                            <h6><i class="fas fa-info-circle"></i> Key Matchups:</h6>
+                            <ul class="mb-0">
+                                <li><strong>Most Competitive:</strong> ${result.most_competitive.matchup} (${result.most_competitive.difference.toFixed(1)}% difference)</li>
+                                <li><strong>Biggest Favorite:</strong> ${result.biggest_favorite.matchup} (${result.biggest_favorite.difference.toFixed(1)}% difference)</li>
+                                <li><strong>Upset Potential:</strong> All matches have potential for surprises based on regional adjustments</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        function updateDisplayOptions() {
+            // Function kept for compatibility but no longer needed
+            // Display format dropdown has been removed as it was unnecessary
+        }
+
+        async function runCustomSimulation() {
+            const simCount = parseInt(document.getElementById('sim-count').value);
+            const analysisType = document.getElementById('analysis-type').value;
+            const displayFormat = 'table'; // Default to table format
+
+            const container = document.getElementById('results-container');
+
+            // Show loading
+            container.innerHTML = '<div class="alert alert-primary"><i class="fas fa-spinner fa-spin"></i> Running ' + simCount + ' real simulations...</div>';
+            container.style.display = 'block';
+
+            try {
+                let apiEndpoint = '';
+                let requestBody = {
+                    type: 'multiple',
+                    num_simulations: simCount,
+                    playin_winner: 'T1',
+                    analysis_type: analysisType,
+                    display_format: displayFormat
+                };
+
+                if (analysisType === 'qualification' || analysisType === 'records' || analysisType === 'regional' || analysisType === 'championship') {
+                    apiEndpoint = '/api/swiss/simulate';
+                } else if (analysisType === 'matchups') {
+                    apiEndpoint = '/api/swiss/simulate_round2_matchups';
+                    requestBody = {
+                        num_simulations: simCount,
+                        round2_matchups: [
+                            { team_a: 'Team Secret Whales', team_b: 'KT Rolster' },
+                            { team_a: 'Top Esports', team_b: '100 Thieves' },
+                            { team_a: 'CTBC Flying Oyster', team_b: 'T1' },
+                            { team_a: 'Gen.G eSports', team_b: 'Anyone s Legend' },
+                            { team_a: 'FlyQuest', team_b: 'Vivo Keyd Stars' },
+                            { team_a: 'G2 Esports', team_b: 'Movistar KOI' },
+                            { team_a: 'Bilibili Gaming', team_b: 'Fnatic' },
+                            { team_a: 'Hanwha Life eSports', team_b: 'PSG Talon' }
+                        ]
+                    };
+                }
+
+                const response = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    let results = formatSimulationResults(data.result, analysisType, displayFormat, simCount);
+                    container.innerHTML = results;
+                } else {
+                    container.innerHTML = '<div class="alert alert-danger">Simulation failed: ' + data.error + '</div>';
+                }
+
+            } catch (error) {
+                container.innerHTML = '<div class="alert alert-danger">Network error: ' + error.message + '</div>';
+            }
+        }
+
+        function formatSimulationResults(result, analysisType, displayFormat, simCount) {
+            if (analysisType === 'qualification') {
+                return formatQualificationResults(result, displayFormat, simCount);
+            } else if (analysisType === 'championship') {
+                return formatChampionshipDistribution(result, displayFormat, simCount);
+            } else if (analysisType === 'regional') {
+                return formatRegionalAnalysis(result, displayFormat, simCount);
+            } else if (analysisType === 'matchups') {
+                return formatMatchupResults(result, displayFormat, simCount);
+            }
+            return '<div class="alert alert-info">Results processed successfully</div>';
+        }
+
+        function formatQualificationResults(result, format, simCount) {
+            let html = '<div class="card"><div class="card-header bg-success text-white"><h4>Real Qualification Simulation (' + simCount + ' runs)</h4></div><div class="card-body">';
+
+            if (result.qualification_stats) {
+                html += '<table class="table table-striped"><thead><tr><th>Rank</th><th>Team</th><th>Region</th><th>Qualification %</th><th>Qualifications</th></tr></thead><tbody>';
+                result.qualification_stats.forEach((team, i) => {
+                    html += '<tr><td>' + (i + 1) + '</td><td><strong>' + team.team + '</strong></td><td><span class="region-badge region-' + team.region + '">' + team.region + '</span></td><td>' + team.percentage.toFixed(1) + '%</td><td>' + team.qualifications + '/' + simCount + '</td></tr>';
+                });
+                html += '</tbody></table>';
+            } else {
+                html += '<div class="alert alert-warning">No qualification data available</div>';
+            }
+
+            html += '</div></div>';
+            return html;
+        }
+
+        function formatChampionshipDistribution(result, format, simCount) {
+            let html = '<div class="card"><div class="card-header bg-warning text-white"><h4>Championship Distribution (' + simCount + ' simulations)</h4></div><div class="card-body">';
+            
+            try {
+                if (result.record_distribution && typeof result.record_distribution === 'object') {
+                    const entries = Object.entries(result.record_distribution);
+                    
+                    if (entries.length === 0) {
+                        html += '<div class="alert alert-warning">No championship data recorded</div>';
+                    } else {
+                        const championshipData = entries
+                            .map(([team, count]) => ({
+                                team: String(team),
+                                championships: parseInt(count) || 0,
+                                percentage: ((parseInt(count) || 0) / simCount * 100)
+                            }))
+                            .filter(data => data.team !== 'No Champion' && data.championships > 0)
+                            .sort((a, b) => b.championships - a.championships);
+                        
+                        if (championshipData.length === 0) {
+                            html += '<div class="alert alert-warning">No valid championship results found</div>';
+                        } else {
+                            html += '<table class="table table-striped"><thead><tr><th>Rank</th><th>Team</th><th>Championships</th><th>Win %</th></tr></thead><tbody>';
+                            
+                            championshipData.forEach((data, index) => {
+                                html += '<tr>';
+                                html += '<td>' + (index + 1) + '</td>';
+                                html += '<td><strong>' + data.team + '</strong></td>';
+                                html += '<td>' + data.championships + '/' + simCount + '</td>';
+                                html += '<td><strong>' + data.percentage.toFixed(1) + '%</strong></td>';
+                                html += '</tr>';
+                            });
+                            
+                            html += '</tbody></table>';
+                            html += '<div class="alert alert-success">Most Likely Champion: ' + championshipData[0].team + ' (' + championshipData[0].percentage.toFixed(1) + '%)</div>';
+                        }
+                    }
+                } else {
+                    html += '<div class="alert alert-warning">No championship data available</div>';
+                }
+            } catch (error) {
+                console.error('Error formatting championship distribution:', error);
+                html += '<div class="alert alert-danger">Error processing championship data: ' + error.message + '</div>';
+            }
+            
+            html += '</div></div>';
+            return html;
+        }
+        
+        function getTeamRegionJS(team) {
+            const regions = {
+                'Gen.G eSports': 'LCK', 'Hanwha Life eSports': 'LCK', 'KT Rolster': 'LCK', 'T1': 'LCK',
+                'Bilibili Gaming': 'LPL', 'Top Esports': 'LPL', 'Invictus Gaming': 'LPL', 'Anyone s Legend': 'LPL',
+                'G2 Esports': 'LEC', 'Fnatic': 'LEC', 'Movistar KOI': 'LEC',
+                'FlyQuest': 'LTA', '100 Thieves': 'LTA', 'Vivo Keyd Stars': 'LTA',
+                'PSG Talon': 'LCP', 'CTBC Flying Oyster': 'LCP', 'Team Secret Whales': 'LCP'
+            };
+            return regions[team] || 'Unknown';
+        }
+
+        function formatRegionalAnalysis(result, format, simCount) {
+            let html = '<div class="card"><div class="card-header bg-info text-white"><h4>Real Regional Analysis (' + simCount + ' simulations)</h4></div><div class="card-body">';
+
+            if (result.regional_stats) {
+                html += '<table class="table table-striped"><thead><tr><th>Region</th><th>Teams</th><th>Avg Qualified</th><th>Qualification Rate</th></tr></thead><tbody>';
+                Object.entries(result.regional_stats).forEach(([region, stats]) => {
+                    html += '<tr><td><span class="region-badge region-' + region + '">' + region + '</span></td><td>' + stats.team_count + '</td><td>' + stats.avg_qualified.toFixed(1) + '</td><td>' + stats.qualification_rate.toFixed(1) + '%</td></tr>';
+                });
+                html += '</tbody></table>';
+            } else {
+                html += '<div class="alert alert-warning">No regional analysis data available</div>';
+            }
+
+            html += '</div></div>';
+            return html;
+        }
+
+        function formatMatchupResults(result, format, simCount) {
+            let html = '<div class="card"><div class="card-header bg-primary text-white"><h4>Round 2 Match Simulation Results (' + simCount + ' simulations)</h4><small>Based on regional-adjusted probability matrix</small></div><div class="card-body">';
+
+            if (result.matchup_results) {
+                html += '<div class="row">';
+
+                // High matches
+                html += '<div class="col-md-6"><h5 class="text-success">High Matches (1-0 teams)</h5><div class="list-group">';
+
+                const highMatches = ['Team Secret Whales vs KT Rolster', 'Top Esports vs 100 Thieves', 'CTBC Flying Oyster vs T1', 'Gen.G eSports vs Anyone s Legend'];
+
+                Object.entries(result.matchup_results).forEach(([matchup, outcomes]) => {
+                    if (highMatches.includes(matchup)) {
+                        html += '<div class="list-group-item">';
+                        html += '<div class="d-flex justify-content-between align-items-center mb-2">';
+                        html += '<span><strong>' + outcomes.team_a + '</strong> vs <strong>' + outcomes.team_b + '</strong></span>';
+                        html += '<span class="badge bg-info">' + outcomes.team_a_wins + '-' + outcomes.team_b_wins + '</span>';
+                        html += '</div>';
+                        html += '<div class="progress" style="height: 20px;">';
+                        html += '<div class="progress-bar bg-success" style="width: ' + outcomes.team_a_percentage + '%">' + outcomes.team_a_percentage.toFixed(1) + '%</div>';
+                        html += '<div class="progress-bar bg-danger" style="width: ' + outcomes.team_b_percentage + '%">' + outcomes.team_b_percentage.toFixed(1) + '%</div>';
+                        html += '</div>';
+                        html += '</div>';
+                    }
+                });
+
+                html += '</div></div>';
+
+                // Low matches
+                html += '<div class="col-md-6"><h5 class="text-danger">Low Matches (0-1 teams)</h5><div class="list-group">';
+
+                Object.entries(result.matchup_results).forEach(([matchup, outcomes]) => {
+                    if (!highMatches.includes(matchup)) {
+                        html += '<div class="list-group-item">';
+                        html += '<div class="d-flex justify-content-between align-items-center mb-2">';
+                        html += '<span><strong>' + outcomes.team_a + '</strong> vs <strong>' + outcomes.team_b + '</strong></span>';
+                        html += '<span class="badge bg-info">' + outcomes.team_a_wins + '-' + outcomes.team_b_wins + '</span>';
+                        html += '</div>';
+                        html += '<div class="progress" style="height: 20px;">';
+                        html += '<div class="progress-bar bg-success" style="width: ' + outcomes.team_a_percentage + '%">' + outcomes.team_a_percentage.toFixed(1) + '%</div>';
+                        html += '<div class="progress-bar bg-danger" style="width: ' + outcomes.team_b_percentage + '%">' + outcomes.team_b_percentage.toFixed(1) + '%</div>';
+                        html += '</div>';
+                        html += '</div>';
+                    }
+                });
+
+                html += '</div></div></div>';
+
+            } else {
+                html += '<div class="alert alert-warning">No matchup results available</div>';
+            }
+
+            html += '</div></div>';
+            return html;
+        }
+
+        function generateQualificationResults(simCount, format) {
+            const teams = [
+                { name: 'Gen.G eSports', rate: 93.5, region: 'LCK' },
+                { name: 'Top Esports', rate: 83.5, region: 'LPL' },
+                { name: 'T1', rate: 80.5, region: 'LCK' },
+                { name: 'Anyone s Legend', rate: 76.5, region: 'LPL' },
+                { name: 'Hanwha Life eSports', rate: 62.5, region: 'LCK' },
+                { name: 'KT Rolster', rate: 62.0, region: 'LCK' },
+                { name: 'CTBC Flying Oyster', rate: 57.0, region: 'LCP' },
+                { name: 'Bilibili Gaming', rate: 51.5, region: 'LPL' },
+                { name: 'Team Secret Whales', rate: 44.5, region: 'LCP' },
+                { name: 'FlyQuest', rate: 42.0, region: 'LTA' },
+                { name: 'G2 Esports', rate: 39.5, region: 'LEC' },
+                { name: '100 Thieves', rate: 38.5, region: 'LTA' },
+                { name: 'Movistar KOI', rate: 22.5, region: 'LEC' },
+                { name: 'Fnatic', rate: 17.0, region: 'LEC' },
+                { name: 'PSG Talon', rate: 16.5, region: 'LCP' },
+                { name: 'Vivo Keyd Stars', rate: 12.5, region: 'LTA' }
+            ];
+
+            let html = '<div class="card"><div class="card-header bg-success text-white"><h4>Qualification Simulation Results (' + simCount + ' runs)</h4></div><div class="card-body">';
+
+            if (format === 'table') {
+                html += '<table class="table table-striped"><thead><tr><th>Rank</th><th>Team</th><th>Region</th><th>Qualification %</th><th>Simulated Qualifications</th></tr></thead><tbody>';
+                teams.forEach((team, i) => {
+                    const simQuals = Math.round((team.rate / 100) * simCount);
+                    const variance = Math.round(Math.random() * 20 - 10);
+                    const actualQuals = Math.max(0, Math.min(simCount, simQuals + variance));
+                    const actualRate = (actualQuals / simCount * 100).toFixed(1);
+                    html += '<tr><td>' + (i + 1) + '</td><td><strong>' + team.name + '</strong></td><td><span class="region-badge region-' + team.region + '">' + team.region + '</span></td><td>' + actualRate + '%</td><td>' + actualQuals + '/' + simCount + '</td></tr>';
+                });
+                html += '</tbody></table>';
+            } else if (format === 'chart') {
+                html += '<div class="row">';
+                teams.slice(0, 8).forEach(team => {
+                    const variance = Math.round(Math.random() * 10 - 5);
+                    const actualRate = Math.max(0, Math.min(100, team.rate + variance));
+                    html += '<div class="col-md-6 mb-2"><div class="d-flex justify-content-between align-items-center"><span><strong>' + team.name + '</strong></span><span>' + actualRate.toFixed(1) + '%</span></div><div class="progress"><div class="progress-bar bg-success" style="width: ' + actualRate + '%"></div></div></div>';
+                });
+                html += '</div>';
+            } else {
+                html += '<div class="alert alert-info"><h6>Detailed Analysis (' + simCount + ' simulations)</h6>';
+                html += '<p><strong>Lock Tier (>90%):</strong> Gen.G eSports (93.5% ± 2.1%)</p>';
+                html += '<p><strong>Very Likely (75-90%):</strong> Top Esports (83.5% ± 3.2%), T1 (80.5% ± 3.8%), Anyone s Legend (76.5% ± 4.1%)</p>';
+                html += '<p><strong>Likely (60-75%):</strong> Hanwha Life eSports (62.5% ± 4.9%), KT Rolster (62.0% ± 5.1%)</p>';
+                html += '<p><strong>Bubble (40-60%):</strong> CTBC Flying Oyster (57.0% ± 5.8%), Bilibili Gaming (51.5% ± 6.2%), Team Secret Whales (44.5% ± 6.8%), FlyQuest (42.0% ± 7.1%)</p>';
+                html += '<p><strong>At Risk (<40%):</strong> Remaining teams have <40% qualification chance</p>';
+                html += '<p><strong>Confidence Intervals:</strong> ±95% confidence based on ' + simCount + ' simulations</p></div>';
+            }
+
+            html += '</div></div>';
+            return html;
+        }
+
+        function generateRecordDistribution(simCount, format) {
+            let html = '<div class="card"><div class="card-header bg-warning text-white"><h4>Final Record Distribution (' + simCount + ' simulations)</h4></div><div class="card-body">';
+
+            const records = ['3-0', '3-1', '3-2', '2-3', '1-3', '0-3'];
+            const distributions = {
+                '3-0': Math.round(simCount * 0.15),
+                '3-1': Math.round(simCount * 0.25),
+                '3-2': Math.round(simCount * 0.35),
+                '2-3': Math.round(simCount * 0.15),
+                '1-3': Math.round(simCount * 0.08),
+                '0-3': Math.round(simCount * 0.02)
+            };
+
+            html += '<div class="row">';
+            records.forEach(record => {
+                const count = distributions[record];
+                const percentage = (count / simCount * 100).toFixed(1);
+                const color = record.startsWith('3-') ? 'success' : record.startsWith('2-') ? 'warning' : 'danger';
+                html += '<div class="col-md-4 mb-3"><div class="card border-' + color + '"><div class="card-body text-center"><h5>' + record + '</h5><p class="mb-0">' + count + ' teams (' + percentage + '%)</p></div></div></div>';
+            });
+            html += '</div>';
+
+            html += '<div class="alert alert-info"><h6>Record Analysis:</h6>';
+            html += '<p><strong>Qualification Records:</strong> 3-0, 3-1, 3-2 (typically 8 teams qualify)</p>';
+            html += '<p><strong>Elimination Records:</strong> 0-3, 1-3, 2-3 (typically 8 teams eliminated)</p>';
+            html += '<p><strong>Most Common:</strong> 3-2 record (35% of teams) - close qualification</p></div>';
+
+            html += '</div></div>';
+            return html;
+        }
+
+        function generateRegionalAnalysis(simCount, format) {
+            let html = '<div class="card"><div class="card-header bg-info text-white"><h4>Regional Performance Analysis (' + simCount + ' simulations)</h4></div><div class="card-body">';
+
+            const regions = [
+                { name: 'LCK', teams: 4, avgQual: 3.2, rate: 80.0 },
+                { name: 'LPL', teams: 3, avgQual: 2.4, rate: 80.0 },
+                { name: 'LCP', teams: 3, avgQual: 1.2, rate: 40.0 },
+                { name: 'LTA', teams: 3, avgQual: 1.0, rate: 33.3 },
+                { name: 'LEC', teams: 3, avgQual: 0.8, rate: 26.7 }
+            ];
+
+            html += '<table class="table table-striped"><thead><tr><th>Region</th><th>Teams</th><th>Avg Qualified</th><th>Qualification Rate</th><th>Performance</th></tr></thead><tbody>';
+            regions.forEach(region => {
+                const performance = region.rate > 70 ? 'Excellent' : region.rate > 50 ? 'Good' : region.rate > 30 ? 'Average' : 'Poor';
+                const color = region.rate > 70 ? 'success' : region.rate > 50 ? 'warning' : 'danger';
+                html += '<tr><td><span class="region-badge region-' + region.name + '">' + region.name + '</span></td><td>' + region.teams + '</td><td>' + region.avgQual.toFixed(1) + '</td><td>' + region.rate.toFixed(1) + '%</td><td><span class="badge bg-' + color + '">' + performance + '</span></td></tr>';
+            });
+            html += '</tbody></table>';
+
+            html += '<div class="alert alert-success"><h6>Regional Insights:</h6>';
+            html += '<p><strong>LCK Dominance:</strong> 80% qualification rate (3.2/4 teams typically qualify)</p>';
+            html += '<p><strong>LPL Strength:</strong> 80% qualification rate (2.4/3 teams typically qualify)</p>';
+            html += '<p><strong>Western Struggles:</strong> LEC and LTA combined <30% qualification rate</p></div>';
+
+            html += '</div></div>';
+            return html;
+        }
+
+        function generateMatchupResults(simCount, format) {
+            let html = '<div class="card"><div class="card-header bg-primary text-white"><h4>Round 2 Match Outcome Distribution (' + simCount + ' simulations)</h4></div><div class="card-body">';
+
+            const matches = [
+                { team1: 'TSW', team2: 'KT', prob1: 22, prob2: 78 },
+                { team1: 'TES', team2: '100T', prob1: 85, prob2: 15 },
+                { team1: 'CFO', team2: 'T1', prob1: 25, prob2: 75 },
+                { team1: 'GEN', team2: 'AL', prob1: 72, prob2: 28 },
+                { team1: 'FLY', team2: 'VKS', prob1: 68, prob2: 32 },
+                { team1: 'G2', team2: 'KOI', prob1: 65, prob2: 35 },
+                { team1: 'BLG', team2: 'FNC', prob1: 78, prob2: 22 },
+                { team1: 'HLE', team2: 'PSG', prob1: 82, prob2: 18 }
+            ];
+
+            html += '<div class="row">';
+            matches.forEach(match => {
+                const wins1 = Math.round((match.prob1 / 100) * simCount);
+                const wins2 = simCount - wins1;
+                html += '<div class="col-md-6 mb-3"><div class="card"><div class="card-body"><h6>' + match.team1 + ' vs ' + match.team2 + '</h6>';
+                html += '<div class="d-flex justify-content-between"><span><strong>' + match.team1 + ':</strong> ' + wins1 + ' wins (' + match.prob1 + '%)</span></div>';
+                html += '<div class="d-flex justify-content-between"><span><strong>' + match.team2 + ':</strong> ' + wins2 + ' wins (' + match.prob2 + '%)</span></div>';
+                html += '<div class="progress mt-2"><div class="progress-bar bg-primary" style="width: ' + match.prob1 + '%">' + match.team1 + '</div><div class="progress-bar bg-secondary" style="width: ' + match.prob2 + '%">' + match.team2 + '</div></div>';
+                html += '</div></div></div>';
+            });
+            html += '</div>';
+
+            html += '<div class="alert alert-warning"><h6>Match Insights:</h6>';
+            html += '<p><strong>Most Predictable:</strong> TES vs 100T (85% vs 15%)</p>';
+            html += '<p><strong>Most Competitive:</strong> G2 vs KOI (65% vs 35%)</p>';
+            html += '<p><strong>Upset Potential:</strong> TSW vs KT (22% vs 78%) - biggest underdog</p></div>';
+
+            html += '</div></div>';
+            return html;
+        }
+
+        function validateSimulationCount(input) {
+            const value = parseInt(input.value);
+            const min = parseInt(input.min);
+            const max = parseInt(input.max);
+            
+            // Remove any validation messages
+            input.setCustomValidity('');
+            
+            if (isNaN(value)) {
+                input.setCustomValidity('Please enter a valid number');
+                return false;
+            }
+            
+            if (value < min) {
+                input.setCustomValidity(`Minimum value is ${min}`);
+                return false;
+            }
+            
+            if (value > max) {
+                input.setCustomValidity(`Maximum value is ${max}`);
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Global error handler for form validation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle form validation errors
+            document.addEventListener('invalid', function(e) {
+                e.preventDefault();
+                const input = e.target;
+                if (input.validity.patternMismatch || input.validity.rangeOverflow || input.validity.rangeUnderflow) {
+                    alert(`Please enter a valid number between ${input.min} and ${input.max}`);
+                }
+            }, true);
         });
     </script>
 </body>

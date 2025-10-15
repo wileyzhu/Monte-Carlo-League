@@ -92,11 +92,11 @@ def analyze_msi_ewc_2025_results():
         'Vivo Keyd Stars': 'LTA',
         'Cloud9': 'LTA',
         
-        # PCS teams (Taiwan/Vietnam)
-        'CTBC Flying Oyster': 'PCS',
-        'GAM Esports': 'PCS',
-        'PSG Talon': 'PCS',
-        'Team Secret Whales': 'PCS'
+        # LCP teams (Taiwan/Vietnam)
+        'CTBC Flying Oyster': 'LCP',
+        'GAM Esports': 'LCP',
+        'PSG Talon': 'LCP',
+        'Team Secret Whales': 'LCP'
     }
     
     print("MSI 2025 + EWC 2025 Combined Regional Strength Analysis")
@@ -214,7 +214,7 @@ def analyze_msi_ewc_2025_results():
             regional_strengths[region] = base_strengths[region] / max_strength
     
     # Add regions that didn't have inter-regional matches (assign default values)
-    all_regions = ['LCK', 'LPL', 'LEC', 'LTA', 'PCS']
+    all_regions = ['LCK', 'LPL', 'LEC', 'LTA', 'LCP']
     for region in all_regions:
         if region not in regional_strengths:
             regional_strengths[region] = 0.5  # Default for missing data
@@ -251,7 +251,7 @@ def apply_regional_strength_adjustment(probability_matrix_path="dataset/probabil
     Regional strength hierarchy (based on MSI 2025 performance):
     1. LCK (Korea) - Dominated MSI 2025 (5-0 matches, 68.2% games)
     2. LPL (China) - Strong second (6-3 matches, 61.1% games)
-    3. PCS (Taiwan/Vietnam) - Competitive performance including GAM
+    3. LCP (Taiwan/Vietnam) - Competitive performance including GAM
     4. LTA (Americas) - Struggled at MSI (1-4 matches, 45.5% games)
     5. LEC (Europe) - Worst major region (2-5 matches, 32.1% games)
     """
@@ -294,10 +294,10 @@ def apply_regional_strength_adjustment(probability_matrix_path="dataset/probabil
         '100 Thieves': 'LTA', 
         'Vivo Keyd Stars': 'LTA',
         
-        # PCS teams (TW/VN)
-        'PSG Talon': 'PCS',
-        'CTBC Flying Oyster': 'PCS',
-        'Team Secret Whales': 'PCS'
+        # LCP teams (TW/VN)
+        'PSG Talon': 'LCP',
+        'CTBC Flying Oyster': 'LCP',
+        'Team Secret Whales': 'LCP'
     }
     
     # Create adjusted matrix

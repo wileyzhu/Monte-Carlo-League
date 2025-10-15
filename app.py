@@ -482,45 +482,183 @@ def simulate_swiss_stage():
                 }
             })
         else:
-            # Multiple Swiss simulations
-            all_qualified = []
-            qualification_counts = {}
+            # Multiple simulations with different analysis types
+            analysis_type = data.get('analysis_type', 'qualification')
             
-            for _ in range(num_simulations):
-                swiss_teams = [
-                    'Bilibili Gaming', 'Gen.G eSports', 'G2 Esports', 'FlyQuest',
-                    'CTBC Flying Oyster', 'Anyone s Legend', 'Hanwha Life eSports',
-                    'Movistar KOI', 'Vivo Keyd Stars', 'Team Secret Whales',
-                    'KT Rolster', 'Top Esports', 'Fnatic', '100 Thieves', 'PSG Talon',
-                    playin_winner
-                ]
+            if analysis_type == 'championship':
+                # Use proper WorldsTournament for championship analysis FROM ROUND 1 STATE
+                # ACTUAL Round 1 results
+                round1_records = {
+                    # 1-0 teams (Round 1 winners)
+                    'Team Secret Whales': [1, 0], 'CTBC Flying Oyster': [1, 0], 'KT Rolster': [1, 0],
+                    '100 Thieves': [1, 0], 'T1': [1, 0], 'Anyone s Legend': [1, 0],
+                    'Top Esports': [1, 0], 'Gen.G eSports': [1, 0],
+                    # 0-1 teams (Round 1 losers)
+                    'Vivo Keyd Stars': [0, 1], 'Fnatic': [0, 1], 'Movistar KOI': [0, 1],
+                    'Bilibili Gaming': [0, 1], 'FlyQuest': [0, 1], 'Hanwha Life eSports': [0, 1],
+                    'G2 Esports': [0, 1], 'PSG Talon': [0, 1]
+                }
                 
-                qualified_teams, eliminated_teams, records, seeding, swiss_details = worlds.run_swiss_stage(swiss_teams)
-                all_qualified.append(qualified_teams)
+                # Create the real results state for simulate_from_real_results
+                real_results_state = {
+                    'playin_completed': True,
+                    'playin_winner': playin_winner,
+                    'swiss_completed': False,
+                    'swiss_current_records': round1_records,
+                    'swiss_round': 2,  # Starting from Round 2 (Round 1 completed)
+                    'elimination_completed': False
+                }
                 
-                for team in qualified_teams:
-                    qualification_counts[team] = qualification_counts.get(team, 0) + 1
+                # Use the proper method to simulate from Round 1 state
+                championship_results = worlds.simulate_from_real_results(real_results_state, num_simulations)
+                
+                # Extract championship distribution
+                record_distribution = {}
+                for team, count, probability in championship_results['champion_stats']:
+                    record_distribution[team] = count
+                
+                result = {
+                    'num_simulations': num_simulations,
+                    'record_distribution': record_distribution,
+                    'playin_winner': playin_winner,
+                    'seeding_strategy': seeding_strategy
+                }
+                
+                return jsonify({
+                    'success': True,
+                    'type': 'multiple',
+                    'result': result
+                })
+            
+            else:
+                # For other analysis types, use the existing Swiss simulation logic
+                # ACTUAL Round 1 results
+                round1_records = {
+                    # 1-0 teams (Round 1 winners)
+                    'Team Secret Whales': [1, 0], 'CTBC Flying Oyster': [1, 0], 'KT Rolster': [1, 0],
+                    '100 Thieves': [1, 0], 'T1': [1, 0], 'Anyone s Legend': [1, 0],
+                    'Top Esports': [1, 0], 'Gen.G eSports': [1, 0],
+                    # 0-1 teams (Round 1 losers)
+                    'Vivo Keyd Stars': [0, 1], 'Fnatic': [0, 1], 'Movistar KOI': [0, 1],
+                    'Bilibili Gaming': [0, 1], 'FlyQuest': [0, 1], 'Hanwha Life eSports': [0, 1],
+                    'G2 Esports': [0, 1], 'PSG Talon': [0, 1]
+                }
+                
+                swiss_teams = list(round1_records.keys())
+                
+                all_qualified = []
+                qualification_counts = {}
+                regional_stats = {}
+                
+                for _ in range(num_simulations):
+                    # Start with Round 1 records
+                    current_records = {team: record.copy() for team, record in round1_records.items()}
+                    
+                    # Continue Swiss stage from Round 2
+                    round_num = 2
+                    
+                    while not all(wins >= 3 or losses >= 3 for wins, losses in current_records.values()):
+                        # Determine matchups for this round (simplified Swiss pairing)
+                        teams_by_record = {}
+                        for team, (wins, losses) in current_records.items():
+                            if wins < 3 and losses < 3:  # Team still active
+                                record_key = f"{wins}-{losses}"
+                                if record_key not in teams_by_record:
+                                    teams_by_record[record_key] = []
+                                teams_by_record[record_key].append(team)
+                        
+                        # Pair teams within same record groups
+                        round_matches = []
+                        for record_group, teams in teams_by_record.items():
+                            random.shuffle(teams)
+                            for i in range(0, len(teams) - 1, 2):
+                                if i + 1 < len(teams):
+                                    round_matches.append((teams[i], teams[i + 1]))
+                        
+                        # Simulate matches
+                        for team1, team2 in round_matches:
+                            win_prob = worlds.get_win_probability(team1, team2)
+                            
+                            if random.random() < win_prob:
+                                winner, loser = team1, team2
+                            else:
+                                winner, loser = team2, team1
+                            
+                            # Update records
+                            current_records[winner][0] += 1  # Add win
+                            current_records[loser][1] += 1   # Add loss
+                        
+                        round_num += 1
+                        if round_num > 10:  # Safety break
+                            break
+                    
+                    # Determine qualified teams (3+ wins)
+                    qualified_teams = [team for team, (wins, losses) in current_records.items() if wins >= 3]
+                    all_qualified.append(qualified_teams)
+                    
+                    # Count qualifications
+                    for team in qualified_teams:
+                        qualification_counts[team] = qualification_counts.get(team, 0) + 1
+                    
+                    # Regional analysis
+                    if analysis_type == 'regional':
+                        for team in qualified_teams:
+                            region = worlds.team_regions.get(team, 'Unknown')
+                            if region not in regional_stats:
+                                regional_stats[region] = {'qualified_count': 0, 'total_teams': 0}
+                            regional_stats[region]['qualified_count'] += 1
+                        
+                        # Count total teams per region
+                        for team in swiss_teams:
+                            region = worlds.team_regions.get(team, 'Unknown')
+                            if region not in regional_stats:
+                                regional_stats[region] = {'qualified_count': 0, 'total_teams': 0}
+                            if regional_stats[region]['total_teams'] == 0:
+                                # Count teams in this region
+                                regional_stats[region]['total_teams'] = sum(1 for t in swiss_teams if worlds.team_regions.get(t) == region)
             
             # Calculate qualification statistics
             qual_stats = []
             for team, count in qualification_counts.items():
+                region = worlds.team_regions.get(team, 'Unknown')
                 qual_stats.append({
                     'team': team,
+                    'region': region,
                     'qualifications': count,
                     'percentage': (count / num_simulations) * 100
                 })
             
             qual_stats.sort(key=lambda x: x['percentage'], reverse=True)
             
+            # Format regional stats
+            formatted_regional_stats = {}
+            for region, stats in regional_stats.items():
+                formatted_regional_stats[region] = {
+                    'team_count': stats['total_teams'],
+                    'avg_qualified': stats['qualified_count'] / num_simulations,
+                    'qualification_rate': (stats['qualified_count'] / (stats['total_teams'] * num_simulations)) * 100
+                }
+            
+            result = {
+                'num_simulations': num_simulations,
+                'qualification_stats': qual_stats,
+                'playin_winner': playin_winner,
+                'seeding_strategy': seeding_strategy
+            }
+            
+            if analysis_type == 'championship':
+                # Ensure record_distribution is never empty
+                if not record_distribution:
+                    # If no championships recorded, create a default distribution
+                    record_distribution = {'No Champion': 0}
+                result['record_distribution'] = record_distribution
+            elif analysis_type == 'regional':
+                result['regional_stats'] = formatted_regional_stats
+            
             return jsonify({
                 'success': True,
                 'type': 'multiple',
-                'result': {
-                    'num_simulations': num_simulations,
-                    'qualification_stats': qual_stats,
-                    'playin_winner': playin_winner,
-                    'seeding_strategy': seeding_strategy
-                }
+                'result': result
             })
             
     except Exception as e:
@@ -610,7 +748,7 @@ def get_regional_strengths():
             'LCK': {'strength': 1.000, 'description': 'Completely dominant performance (11-3 matches, 65.9% games, 80.0% weighted)'},
             'LPL': {'strength': 0.821, 'description': 'Strong but clearly behind Korea (8-5 matches, 59.2% games, 62.2% weighted)'},
             'LEC': {'strength': 0.601, 'description': 'Competitive middle tier (8-8 matches, 38.6% games, 48.3% weighted)'},
-            'PCS': {'strength': 0.393, 'description': 'Struggled significantly (2-7 matches, 37.9% games, 23.5% weighted)'},
+            'LCP': {'strength': 0.393, 'description': 'Struggled significantly (2-7 matches, 37.9% games, 23.5% weighted)'},
             'LTA': {'strength': 0.314, 'description': 'Weakest region overall (1-7 matches, 38.5% games, 13.3% weighted)'}
         }
         
@@ -682,7 +820,260 @@ def simulate_swiss_from_first_draw():
             'error': str(e)
         }), 500
 
+@app.route('/api/swiss/simulate_from_round1', methods=['POST'])
+def simulate_from_round1_results():
+    """Simulate Swiss stage from actual Round 1 results using proper simulation"""
+    try:
+        data = request.get_json()
+        num_simulations = data.get('num_simulations', 200)
+        
+        worlds = initialize_tournament()
+        
+        # ACTUAL Round 1 results
+        round1_records = {
+            # 1-0 teams (Round 1 winners)
+            'Team Secret Whales': [1, 0],    # beat Vivo Keyd Stars
+            'CTBC Flying Oyster': [1, 0],    # beat Fnatic
+            'KT Rolster': [1, 0],            # beat Movistar KOI
+            '100 Thieves': [1, 0],           # beat Bilibili Gaming
+            'T1': [1, 0],                    # beat FlyQuest
+            'Anyone s Legend': [1, 0],       # beat Hanwha Life eSports
+            'Top Esports': [1, 0],           # beat G2 Esports
+            'Gen.G eSports': [1, 0],         # beat PSG Talon
+            
+            # 0-1 teams (Round 1 losers)
+            'Vivo Keyd Stars': [0, 1],       # lost to Team Secret Whales
+            'Fnatic': [0, 1],                # lost to CTBC Flying Oyster
+            'Movistar KOI': [0, 1],          # lost to KT Rolster
+            'Bilibili Gaming': [0, 1],       # lost to 100 Thieves
+            'FlyQuest': [0, 1],              # lost to T1
+            'Hanwha Life eSports': [0, 1],   # lost to Anyone s Legend
+            'G2 Esports': [0, 1],            # lost to Top Esports
+            'PSG Talon': [0, 1]              # lost to Gen.G eSports
+        }
+        
+        swiss_teams = list(round1_records.keys())
+        
+        # Run proper simulations from Round 1 state
+        qualification_counts = {}
+        
+        for sim in range(num_simulations):
+            # Start with Round 1 records
+            current_records = {team: record.copy() for team, record in round1_records.items()}
+            
+            # Continue Swiss stage from Round 2
+            round_num = 2
+            
+            while not all(wins >= 3 or losses >= 3 for wins, losses in current_records.values()):
+                # Determine matchups for this round (simplified Swiss pairing)
+                teams_by_record = {}
+                for team, (wins, losses) in current_records.items():
+                    if wins < 3 and losses < 3:  # Team still active
+                        record_key = f"{wins}-{losses}"
+                        if record_key not in teams_by_record:
+                            teams_by_record[record_key] = []
+                        teams_by_record[record_key].append(team)
+                
+                # Pair teams within same record groups
+                round_matches = []
+                for record_group, teams in teams_by_record.items():
+                    random.shuffle(teams)
+                    for i in range(0, len(teams) - 1, 2):
+                        if i + 1 < len(teams):
+                            round_matches.append((teams[i], teams[i + 1]))
+                
+                # Simulate matches
+                for team1, team2 in round_matches:
+                    win_prob = worlds.get_win_probability(team1, team2)
+                    
+                    if random.random() < win_prob:
+                        winner, loser = team1, team2
+                    else:
+                        winner, loser = team2, team1
+                    
+                    # Update records
+                    current_records[winner][0] += 1  # Add win
+                    current_records[loser][1] += 1   # Add loss
+                
+                round_num += 1
+                if round_num > 10:  # Safety break
+                    break
+            
+            # Determine qualified teams (3+ wins)
+            qualified = [team for team, (wins, losses) in current_records.items() if wins >= 3]
+            
+            # Count qualifications
+            for team in qualified:
+                qualification_counts[team] = qualification_counts.get(team, 0) + 1
+        
+        # Calculate results
+        qual_stats = []
+        for team, count in qualification_counts.items():
+            percentage = (count / num_simulations) * 100
+            region = worlds.team_regions.get(team, 'Unknown')
+            qual_stats.append({
+                'team': team,
+                'region': region,
+                'qualifications': count,
+                'percentage': percentage
+            })
+        
+        qual_stats.sort(key=lambda x: x['percentage'], reverse=True)
+        
+        # Separate into categories
+        likely_qualified = [stat for stat in qual_stats if stat['percentage'] > 50]
+        bubble_teams = [stat for stat in qual_stats if 20 <= stat['percentage'] <= 50]
+        
+        # Calculate regional analysis
+        regional_quals = {}
+        for stat in qual_stats:
+            region = stat['region']
+            if region not in regional_quals:
+                regional_quals[region] = {'total_percentage': 0, 'teams': []}
+            regional_quals[region]['total_percentage'] += stat['percentage']
+            regional_quals[region]['teams'].append(f"{stat['team']} ({stat['percentage']:.1f}%)")
+        
+        results = {
+            'qualification_stats': qual_stats,
+            'regional_analysis': regional_quals,
+            'likely_qualified': likely_qualified,
+            'bubble_teams': bubble_teams,
+            'num_simulations': num_simulations
+        }
+        
+        return jsonify({
+            'success': True,
+            'result': results
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/swiss/simulate_round2_matchups', methods=['POST'])
+def simulate_round2_matchups():
+    """Simulate Round 2 matchup outcomes"""
+    try:
+        data = request.get_json()
+        num_simulations = data.get('num_simulations', 100)
+        round2_matchups = data.get('round2_matchups', [])
+        
+        worlds = initialize_tournament()
+        
+        matchup_results = {}
+        
+        for matchup in round2_matchups:
+            team_a = matchup['team_a']
+            team_b = matchup['team_b']
+            
+            # Get win probability from matrix
+            win_prob_a = worlds.get_win_probability(team_a, team_b)
+            
+            # Simulate the matchup
+            team_a_wins = 0
+            for _ in range(num_simulations):
+                if random.random() < win_prob_a:
+                    team_a_wins += 1
+            
+            team_b_wins = num_simulations - team_a_wins
+            
+            matchup_key = f"{team_a} vs {team_b}"
+            matchup_results[matchup_key] = {
+                'team_a': team_a,
+                'team_b': team_b,
+                'team_a_wins': team_a_wins,
+                'team_b_wins': team_b_wins,
+                'team_a_percentage': (team_a_wins / num_simulations) * 100,
+                'team_b_percentage': (team_b_wins / num_simulations) * 100,
+                'expected_prob_a': win_prob_a * 100,
+                'expected_prob_b': (1 - win_prob_a) * 100
+            }
+        
+        return jsonify({
+            'success': True,
+            'result': {
+                'matchup_results': matchup_results,
+                'num_simulations': num_simulations
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/swiss/match_predictions', methods=['POST'])
+def get_match_predictions():
+    """Get Round 2 match predictions with real probabilities"""
+    try:
+        worlds = initialize_tournament()
+        
+        # Round 2 matchups based on actual draw
+        high_matches = [
+            {'team_a': 'Team Secret Whales', 'team_b': 'KT Rolster'},
+            {'team_a': 'Top Esports', 'team_b': '100 Thieves'},
+            {'team_a': 'CTBC Flying Oyster', 'team_b': 'T1'},
+            {'team_a': 'Gen.G eSports', 'team_b': 'Anyone s Legend'}
+        ]
+        
+        low_matches = [
+            {'team_a': 'FlyQuest', 'team_b': 'Vivo Keyd Stars'},
+            {'team_a': 'G2 Esports', 'team_b': 'Movistar KOI'},
+            {'team_a': 'Bilibili Gaming', 'team_b': 'Fnatic'},
+            {'team_a': 'Hanwha Life eSports', 'team_b': 'PSG Talon'}
+        ]
+        
+        # Calculate real probabilities for high matches
+        for match in high_matches:
+            win_prob_a = worlds.get_win_probability(match['team_a'], match['team_b'])
+            match['team_a_prob'] = win_prob_a * 100
+            match['team_b_prob'] = (1 - win_prob_a) * 100
+        
+        # Calculate real probabilities for low matches
+        for match in low_matches:
+            win_prob_a = worlds.get_win_probability(match['team_a'], match['team_b'])
+            match['team_a_prob'] = win_prob_a * 100
+            match['team_b_prob'] = (1 - win_prob_a) * 100
+        
+        # Find most competitive and biggest favorite
+        all_matches = high_matches + low_matches
+        
+        most_competitive = min(all_matches, key=lambda m: abs(m['team_a_prob'] - 50))
+        most_competitive_diff = abs(most_competitive['team_a_prob'] - 50) * 2
+        
+        biggest_favorite = max(all_matches, key=lambda m: abs(m['team_a_prob'] - 50))
+        biggest_favorite_diff = abs(biggest_favorite['team_a_prob'] - 50) * 2
+        
+        result = {
+            'high_matches': high_matches,
+            'low_matches': low_matches,
+            'most_competitive': {
+                'matchup': f"{most_competitive['team_a']} vs {most_competitive['team_b']}",
+                'difference': most_competitive_diff
+            },
+            'biggest_favorite': {
+                'matchup': f"{biggest_favorite['team_a']} vs {biggest_favorite['team_b']}",
+                'difference': biggest_favorite_diff
+            }
+        }
+        
+        return jsonify({
+            'success': True,
+            'result': result
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+# Removed simulate_elimination_bracket - now using proper WorldsTournament.run_multiple_simulations()
+
 if __name__ == '__main__':
     import os
-    port = int(os.environ.get('PORT', 3000))
-    app.run(debug=False, host='0.0.0.0', port=port)
+    port = int(os.environ.get('PORT', 8000))
+    app.run(debug=True, host='0.0.0.0', port=port)

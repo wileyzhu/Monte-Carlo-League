@@ -1,5 +1,9 @@
 import pandas as pd
 import numpy as np
+from scipy.special import expit, logit
+
+def adjust_prob(original_prob, strength_ratio, lambda_=0.8):
+    return expit(logit(original_prob) + lambda_ * np.log(strength_ratio))
 
 def apply_regional_strength_adjustment(probability_matrix_path="dataset/probability_matrix.csv", 
                                      output_path="dataset/probability_matrix_msi_adjusted.csv"):
@@ -10,7 +14,7 @@ def apply_regional_strength_adjustment(probability_matrix_path="dataset/probabil
     1. LCK (Korea) - Completely dominant (11-3 matches, 78.6% win rate, 80.0% weighted)
     2. LPL (China) - Strong but behind Korea (8-5 matches, 61.5% win rate, 62.2% weighted)
     3. LEC (Europe) - Competitive middle tier (8-8 matches, 50.0% win rate, 48.3% weighted)
-    4. PCS (Taiwan/Vietnam) - Struggled significantly (2-7 matches, 22.2% win rate, 23.5% weighted)
+    4. LCP (Taiwan/Vietnam) - Struggled significantly (2-7 matches, 22.2% win rate, 23.5% weighted)
     5. LTA (Americas) - Weakest region (1-7 matches, 12.5% win rate, 13.3% weighted)
     """
     
@@ -22,7 +26,7 @@ def apply_regional_strength_adjustment(probability_matrix_path="dataset/probabil
         'LCK': 1.000,    # MSI 2025 + EWC 2025 combined
         'LPL': 0.821,    # MSI 2025 + EWC 2025 combined
         'LEC': 0.601,    # MSI 2025 + EWC 2025 combined
-        'PCS': 0.393,    # MSI 2025 + EWC 2025 combined
+        'LCP': 0.393,    # MSI 2025 + EWC 2025 combined
         'LTA': 0.314,    # MSI 2025 + EWC 2025 combined
     }
     
@@ -50,10 +54,10 @@ def apply_regional_strength_adjustment(probability_matrix_path="dataset/probabil
         '100 Thieves': 'LTA', 
         'Vivo Keyd Stars': 'LTA',
         
-        # PCS teams (TW/VN)
-        'PSG Talon': 'PCS',
-        'CTBC Flying Oyster': 'PCS',
-        'Team Secret Whales': 'PCS'
+        # LCP teams (TW/VN)
+        'PSG Talon': 'LCP',
+        'CTBC Flying Oyster': 'LCP',
+        'Team Secret Whales': 'LCP'
     }
     
     # Create adjusted matrix
@@ -80,21 +84,9 @@ def apply_regional_strength_adjustment(probability_matrix_path="dataset/probabil
                     strength2 = regional_strength[region2]
                     strength_ratio = strength1 / strength2
                     
-                    # Apply extremely aggressive adjustment based on MSI data
-                    if strength_ratio < 1.0:
-                        # Weaker region vs stronger region - massive penalty
-                        adjustment_factor = 0.25 + (strength_ratio * 0.5)  # Scale between 0.25-0.75
-                        adjusted_prob = original_prob * adjustment_factor
-                    elif strength_ratio > 1.0:
-                        # Stronger region vs weaker region - significant boost
-                        adjustment_factor = 1.0 + ((strength_ratio - 1.0) * 0.7)  # Scale between 1.0-1.7
-                        adjusted_prob = original_prob * adjustment_factor
-                    else:
-                        # Same region strength
-                        adjusted_prob = original_prob
-                    
-                    # Ensure probabilities stay within [0.05, 0.95] range for extreme realism
-                    adjusted_prob = max(0.05, min(0.95, adjusted_prob))
+                    # Use logit-based adjustment for more mathematically sound probability transformation
+                    adjusted_prob = adjust_prob(original_prob, strength_ratio, lambda_=1)
+                
                     
                     # Update matrix
                     adjusted_matrix.loc[team1, team2] = adjusted_prob

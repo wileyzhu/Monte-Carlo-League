@@ -84,7 +84,7 @@ python -m pytest tests/
 Based on MSI performance data:
 - **LCK (Korea)**: 1.000 - Dominant regional performance
 - **LPL (China)**: 0.808 - Strong secondary region
-- **PCS (Taiwan/Vietnam)**: 0.510 - Emerging region strength
+- **LCP (Taiwan/Vietnam)**: 0.510 - Emerging region strength
 - **LTA (Americas)**: 0.487 - Competitive but inconsistent
 - **LEC (Europe)**: 0.400 - Rebuilding phase
 

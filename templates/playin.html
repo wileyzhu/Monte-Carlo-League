@@ -155,7 +155,7 @@
                             <div class="col-md-6">
                                 <div class="input-group mb-2">
                                     <input type="number" class="form-control" id="num-simulations" value="100" min="1"
-                                        max="1000" placeholder="Number of simulations">
+                                        max="1000" step="1" placeholder="Number of simulations" oninput="validateSimulationCount(this)">
                                     <button class="btn btn-success" onclick="runMultipleSimulations()">
                                         <i class="fas fa-chart-bar"></i> Multiple Simulations
                                     </button>
@@ -619,6 +619,44 @@
             `;
             container.style.display = 'block';
         }
+
+        function validateSimulationCount(input) {
+            const value = parseInt(input.value);
+            const min = parseInt(input.min);
+            const max = parseInt(input.max);
+            
+            // Remove any validation messages
+            input.setCustomValidity('');
+            
+            if (isNaN(value)) {
+                input.setCustomValidity('Please enter a valid number');
+                return false;
+            }
+            
+            if (value < min) {
+                input.setCustomValidity(`Minimum value is ${min}`);
+                return false;
+            }
+            
+            if (value > max) {
+                input.setCustomValidity(`Maximum value is ${max}`);
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Global error handler for form validation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle form validation errors
+            document.addEventListener('invalid', function(e) {
+                e.preventDefault();
+                const input = e.target;
+                if (input.validity.patternMismatch || input.validity.rangeOverflow || input.validity.rangeUnderflow) {
+                    alert(`Please enter a valid number between ${input.min} and ${input.max}`);
+                }
+            }, true);
+        });
     </script>
 </body>
 
