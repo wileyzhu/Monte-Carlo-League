@@ -434,6 +434,346 @@ class WorldsTournament:
             'champion_stats': champion_stats,
             'all_results': all_results
         }
+    
+    def simulate_from_real_results(self, real_results, num_simulations=100):
+        """
+        Simulate tournament continuation based on real results input.
+        
+        Args:
+            real_results: Dict containing actual tournament results so far
+            num_simulations: Number of simulations to run from this point
+            
+        Example real_results format:
+        {
+            'playin_completed': True,
+            'playin_winner': 'T1',
+            'swiss_completed': False,
+            'swiss_current_records': {
+                'T1': [2, 1],  # 2 wins, 1 loss
+                'Gen.G eSports': [3, 0],
+                # ... other teams
+            },
+            'swiss_round': 4,  # Currently in round 4
+            'elimination_completed': False
+        }
+        """
+        print(f"Simulating tournament from real results ({num_simulations} simulations)...")
+        
+        results = []
+        
+        for sim in range(num_simulations):
+            # Start from the current state
+            current_state = real_results.copy()
+            
+            # If playin not completed, simulate it
+            if not current_state.get('playin_completed', False):
+                playin_teams = current_state.get('playin_teams', ['T1', 'Invictus Gaming'])
+                playin_winner = self._simulate_playin_from_state(playin_teams, current_state)
+                current_state['playin_winner'] = playin_winner
+                current_state['playin_completed'] = True
+            
+            # If Swiss not completed, continue from current records
+            if not current_state.get('swiss_completed', False):
+                swiss_result = self._simulate_swiss_from_state(current_state)
+                current_state.update(swiss_result)
+                current_state['swiss_completed'] = True
+            
+            # If elimination not completed, simulate it
+            if not current_state.get('elimination_completed', False):
+                elimination_result = self._simulate_elimination_from_state(current_state)
+                current_state.update(elimination_result)
+                current_state['elimination_completed'] = True
+            
+            results.append(current_state)
+        
+        # Analyze results
+        champions = [result['champion'] for result in results]
+        champion_counts = {}
+        for champion in champions:
+            champion_counts[champion] = champion_counts.get(champion, 0) + 1
+        
+        champion_stats = [(team, count, count/num_simulations) 
+                         for team, count in champion_counts.items()]
+        champion_stats.sort(key=lambda x: x[1], reverse=True)
+        
+        return {
+            'num_simulations': num_simulations,
+            'champion_stats': champion_stats,
+            'most_likely_champion': champion_stats[0][0] if champion_stats else None,
+            'champion_probability': champion_stats[0][2] if champion_stats else 0,
+            'all_results': results
+        }
+    
+    def _simulate_playin_from_state(self, playin_teams, current_state):
+        """Simulate playin from current state"""
+        # Use existing playin simulation
+        playin_win_probs = np.zeros((len(playin_teams), len(playin_teams)))
+        for i, team1 in enumerate(playin_teams):
+            for j, team2 in enumerate(playin_teams):
+                if i == j:
+                    playin_win_probs[i, j] = 0.5
+                else:
+                    playin_win_probs[i, j] = self.get_win_probability(team1, team2)
+        
+        playin = Playin(playin_teams, playin_win_probs, best_of=5)
+        return playin.run(realistic=True)
+    
+    def _simulate_swiss_from_state(self, current_state):
+        """Continue Swiss simulation from current records"""
+        playin_winner = current_state['playin_winner']
+        
+        # Determine Swiss teams
+        if playin_winner == 'Invictus Gaming':
+            swiss_teams = ['Bilibili Gaming', 'Gen.G eSports', 'G2 Esports', 'FlyQuest', 
+                          'CTBC Flying Oyster', 'Anyone s Legend', 'Hanwha Life eSports', 
+                          'Movistar KOI', 'Vivo Keyd Stars', 'Team Secret Whales', 
+                          'Top Esports', 'Invictus Gaming', 'KT Rolster', 'Fnatic', 
+                          '100 Thieves', 'PSG Talon']
+        else:  # T1 wins
+            swiss_teams = ['Bilibili Gaming', 'Gen.G eSports', 'G2 Esports', 'FlyQuest', 
+                          'CTBC Flying Oyster', 'Anyone s Legend', 'Hanwha Life eSports', 
+                          'Movistar KOI', 'Vivo Keyd Stars', 'Team Secret Whales', 
+                          'KT Rolster', 'T1', 'Top Esports', 'Fnatic', 
+                          '100 Thieves', 'PSG Talon']
+        
+        # If we have current records, use them; otherwise start fresh
+        if 'swiss_current_records' in current_state:
+            # Continue from current records
+            qualified, eliminated = self._continue_swiss_from_records(
+                swiss_teams, current_state['swiss_current_records']
+            )
+        else:
+            # Run full Swiss
+            qualified, eliminated, records, seeding, swiss_details = self.run_swiss_stage(swiss_teams)
+        
+        return {
+            'swiss_qualified': qualified,
+            'swiss_eliminated': eliminated
+        }
+    
+    def _continue_swiss_from_records(self, swiss_teams, current_records):
+        """Continue Swiss stage from current team records"""
+        # Create seed groups
+        seed_groups = {}
+        for i, team in enumerate(swiss_teams):
+            if i < 5:
+                seed_groups[team] = 0
+            elif i < 11:
+                seed_groups[team] = 1
+            else:
+                seed_groups[team] = 2
+        
+        # Create probability matrix
+        n_teams = len(swiss_teams)
+        win_probs = np.zeros((n_teams, n_teams))
+        for i, team1 in enumerate(swiss_teams):
+            for j, team2 in enumerate(swiss_teams):
+                if i == j:
+                    win_probs[i, j] = 0.5
+                else:
+                    win_probs[i, j] = self.get_win_probability(team1, team2)
+        
+        # Create Swiss tournament with current records
+        swiss_tournament = SwissTournament(swiss_teams, seed_groups, self.team_regions, win_probs)
+        
+        # Set current records
+        for team, record in current_records.items():
+            if team in swiss_tournament.records:
+                swiss_tournament.records[team] = record
+        
+        # Continue simulation until completion
+        while not all(w >= 3 or l >= 3 for w, l in swiss_tournament.records.values()):
+            swiss_tournament.swiss_round()
+        
+        # Determine final results
+        team_records = [(team, wins, losses) for team, (wins, losses) in swiss_tournament.records.items()]
+        team_records.sort(key=lambda x: (-x[1], x[2]))
+        
+        qualified = [team for team, _, _ in team_records[:8]]
+        eliminated = [team for team, _, _ in team_records[8:]]
+        
+        return qualified, eliminated
+    
+    def _simulate_elimination_from_state(self, current_state):
+        """Simulate elimination bracket from qualified teams"""
+        qualified_teams = current_state['swiss_qualified']
+        
+        # Create probability matrix for elimination teams
+        n_teams = len(qualified_teams)
+        win_probs = np.zeros((n_teams, n_teams))
+        
+        for i, team1 in enumerate(qualified_teams):
+            for j, team2 in enumerate(qualified_teams):
+                if i == j:
+                    win_probs[i, j] = 0.5
+                else:
+                    win_probs[i, j] = self.get_win_probability(team1, team2)
+        
+        # Simple seeding (top 8 teams) - ensure we have exactly 8 teams
+        if len(qualified_teams) < 8:
+            # Pad with dummy teams if needed
+            while len(qualified_teams) < 8:
+                qualified_teams.append(f"Dummy_Team_{len(qualified_teams)}")
+        elif len(qualified_teams) > 8:
+            qualified_teams = qualified_teams[:8]
+            
+        seed_groups = [qualified_teams[:3], qualified_teams[3:6], qualified_teams[6:8]]
+        
+        # Run elimination
+        elimination_tournament = Elimination(qualified_teams, seed_groups, win_probs)
+        (semi1, semi2), (final1, final2), champion, quarterfinal_results = elimination_tournament.run()
+        
+        return {
+            'champion': champion,
+            'finals': (final1, final2),
+            'semifinals': (semi1, semi2),
+            'quarterfinals': quarterfinal_results
+        }
+    
+    def simulate_swiss_from_first_draw(self, first_draw_matchups, playin_winner='T1', num_simulations=100):
+        """
+        Simulate Swiss stage from first draw matchups.
+        
+        Args:
+            first_draw_matchups: List of matchup pairings for Round 1
+            playin_winner: Winner of playin stage
+            num_simulations: Number of simulations to run
+            
+        Example first_draw_matchups format:
+        [
+            {'team_a': 'Gen.G eSports', 'team_b': '100 Thieves'},
+            {'team_a': 'FlyQuest', 'team_b': 'Fnatic'},
+            # ... 8 matchups total for 16 teams
+        ]
+        """
+        print(f"Simulating Swiss stage from first draw matchups ({num_simulations} simulations)...")
+        
+        # Determine Swiss teams based on playin winner
+        if playin_winner == 'Invictus Gaming':
+            swiss_teams = ['Bilibili Gaming', 'Gen.G eSports', 'G2 Esports', 'FlyQuest', 
+                          'CTBC Flying Oyster', 'Anyone s Legend', 'Hanwha Life eSports', 
+                          'Movistar KOI', 'Vivo Keyd Stars', 'Team Secret Whales', 
+                          'Top Esports', 'Invictus Gaming', 'KT Rolster', 'Fnatic', 
+                          '100 Thieves', 'PSG Talon']
+        else:  # T1 wins
+            swiss_teams = ['Bilibili Gaming', 'Gen.G eSports', 'G2 Esports', 'FlyQuest', 
+                          'CTBC Flying Oyster', 'Anyone s Legend', 'Hanwha Life eSports', 
+                          'Movistar KOI', 'Vivo Keyd Stars', 'Team Secret Whales', 
+                          'KT Rolster', 'T1', 'Top Esports', 'Fnatic', 
+                          '100 Thieves', 'PSG Talon']
+        
+        results = []
+        
+        for sim in range(num_simulations):
+            # Simulate Round 1 with the given matchups
+            initial_records = {team: [0, 0] for team in swiss_teams}
+            
+            # Simulate each matchup in Round 1
+            for matchup in first_draw_matchups:
+                team_a = matchup['team_a']
+                team_b = matchup['team_b']
+                
+                # Get win probability and simulate match
+                win_prob = self.get_win_probability(team_a, team_b)
+                
+                if random.random() < win_prob:
+                    winner = team_a
+                    loser = team_b
+                else:
+                    winner = team_b
+                    loser = team_a
+                
+                # Update records
+                if winner in initial_records:
+                    initial_records[winner][0] += 1  # Add win
+                if loser in initial_records:
+                    initial_records[loser][1] += 1   # Add loss
+            
+            # Continue Swiss simulation from round 2
+            qualified, eliminated = self._continue_swiss_from_records(swiss_teams, initial_records)
+            
+            results.append({
+                'qualified': qualified,
+                'eliminated': eliminated,
+                'round1_records': initial_records
+            })
+        
+        # Calculate qualification statistics
+        qualification_counts = {}
+        for result in results:
+            for team in result['qualified']:
+                qualification_counts[team] = qualification_counts.get(team, 0) + 1
+        
+        qual_stats = []
+        for team, count in qualification_counts.items():
+            qual_stats.append({
+                'team': team,
+                'qualifications': count,
+                'percentage': (count / num_simulations) * 100
+            })
+        
+        qual_stats.sort(key=lambda x: x['percentage'], reverse=True)
+        
+        return {
+            'num_simulations': num_simulations,
+            'qualification_stats': qual_stats,
+            'first_draw_matchups': first_draw_matchups,
+            'playin_winner': playin_winner
+        }
+    
+    def simulate_matchup_results(self, first_draw_matchups, playin_winner='T1', num_simulations=100):
+        """
+        Simulate Round 1 matchup results only (not full Swiss stage).
+        
+        Args:
+            first_draw_matchups: List of matchup pairings for Round 1
+            playin_winner: Winner of playin stage
+            num_simulations: Number of simulations to run
+            
+        Returns:
+            Statistics on who wins each matchup
+        """
+        print(f"Simulating Round 1 matchup results ({num_simulations} simulations)...")
+        
+        matchup_results = {}
+        
+        for sim in range(num_simulations):
+            # Simulate each matchup in Round 1
+            for i, matchup in enumerate(first_draw_matchups):
+                match_id = f"Match {i+1}"
+                team_a = matchup['team_a']
+                team_b = matchup['team_b']
+                
+                if match_id not in matchup_results:
+                    matchup_results[match_id] = {
+                        'team_a': team_a,
+                        'team_b': team_b,
+                        'team_a_wins': 0,
+                        'team_b_wins': 0,
+                        'matchup': f"{team_a} vs {team_b}"
+                    }
+                
+                # Get win probability and simulate match
+                win_prob = self.get_win_probability(team_a, team_b)
+                
+                if random.random() < win_prob:
+                    matchup_results[match_id]['team_a_wins'] += 1
+                else:
+                    matchup_results[match_id]['team_b_wins'] += 1
+        
+        # Calculate percentages
+        for match_id, result in matchup_results.items():
+            result['team_a_win_rate'] = (result['team_a_wins'] / num_simulations) * 100
+            result['team_b_win_rate'] = (result['team_b_wins'] / num_simulations) * 100
+            result['most_likely_winner'] = result['team_a'] if result['team_a_wins'] > result['team_b_wins'] else result['team_b']
+            result['confidence'] = max(result['team_a_win_rate'], result['team_b_win_rate'])
+        
+        return {
+            'num_simulations': num_simulations,
+            'matchup_results': matchup_results,
+            'first_draw_matchups': first_draw_matchups,
+            'playin_winner': playin_winner
+        }
 
 def main():
     """Main function to run tournament simulation"""

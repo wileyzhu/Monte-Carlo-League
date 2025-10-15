@@ -627,5 +627,60 @@ def get_regional_strengths():
 
 
 
+@app.route('/api/simulate_from_real', methods=['POST'])
+def simulate_from_real_results():
+    """Simulate tournament from real results input"""
+    try:
+        data = request.get_json()
+        real_results = data.get('real_results', {})
+        num_simulations = data.get('num_simulations', 100)
+        
+        worlds = initialize_tournament()
+        
+        # Run simulation from real results
+        results = worlds.simulate_from_real_results(real_results, num_simulations)
+        
+        return jsonify({
+            'success': True,
+            'results': results
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/swiss/simulate_from_draw', methods=['POST'])
+def simulate_swiss_from_first_draw():
+    """Simulate Swiss stage from first draw matchups"""
+    try:
+        data = request.get_json()
+        first_draw_matchups = data.get('first_draw_matchups', [])
+        playin_winner = data.get('playin_winner', 'T1')
+        num_simulations = data.get('num_simulations', 100)
+        simulation_type = data.get('simulation_type', 'qualification')
+        
+        worlds = initialize_tournament()
+        
+        if simulation_type == 'matchup_results':
+            # Simulate only Round 1 matchup results
+            results = worlds.simulate_matchup_results(first_draw_matchups, playin_winner, num_simulations)
+        else:
+            # Simulate full Swiss stage for qualification rates
+            results = worlds.simulate_swiss_from_first_draw(first_draw_matchups, playin_winner, num_simulations)
+        
+        return jsonify({
+            'success': True,
+            'result': results,
+            'simulation_type': simulation_type
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=3000)

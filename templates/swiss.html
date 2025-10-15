@@ -217,12 +217,12 @@
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <button class="btn btn-primary btn-lg w-100 mb-2" onclick="runSingleSwiss()">
                                     <i class="fas fa-dice"></i> Single Swiss Simulation
                                 </button>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="input-group mb-2">
                                     <input type="number" class="form-control" id="num-simulations" value="100" min="1"
                                         max="1000" placeholder="Number of simulations">
@@ -231,6 +231,240 @@
                                     </button>
                                 </div>
                                 <small class="text-muted">Run 1-1000 Swiss simulations</small>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-warning btn-lg w-100 mb-2" onclick="showFirstDrawInput()">
+                                    <i class="fas fa-edit"></i> Input First Draw Matchups
+                                </button>
+                                <small class="text-muted">Enter actual Round 1 matchups</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- First Draw Input -->
+        <div class="row mb-4" id="first-draw-section" style="display: none;">
+            <div class="col-12">
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-dark">
+                        <h4><i class="fas fa-edit"></i> Input First Draw Matchups</h4>
+                        <small>Enter the actual matchup pairings from Round 1 of Swiss stage</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Play-in Winner</label>
+                                <select class="form-select" id="draw-playin-winner">
+                                    <option value="T1">T1</option>
+                                    <option value="Invictus Gaming">Invictus Gaming</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Simulation Type</label>
+                                <select class="form-select" id="simulation-type">
+                                    <option value="qualification">Qualification Rates</option>
+                                    <option value="matchup_results">Round 1 Match Results</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Number of Simulations</label>
+                                <input type="number" class="form-control" id="draw-simulations" value="100" min="1" max="1000">
+                            </div>
+                        </div>
+                        
+                        <h6>Round 1 Matchups (8 matches)</h6>
+                        <div class="row" id="first-draw-matches">
+                            <div class="col-md-6 mb-2">
+                                <div class="card border-primary">
+                                    <div class="card-body">
+                                        <h6>Match 1 <small class="text-muted">(Pool 1 vs Pool 3)</small></h6>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <select class="form-select team-select" data-match="1" data-position="a">
+                                                    <option value="">Team A</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-6">
+                                                <select class="form-select team-select" data-match="1" data-position="b">
+                                                    <option value="">Team B</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <div class="card border-primary">
+                                    <div class="card-body">
+                                        <h6>Match 2 <small class="text-muted">(Pool 1 vs Pool 3)</small></h6>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <select class="form-select team-select" data-match="2" data-position="a">
+                                                    <option value="">Team A</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-6">
+                                                <select class="form-select team-select" data-match="2" data-position="b">
+                                                    <option value="">Team B</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <div class="card border-primary">
+                                    <div class="card-body">
+                                        <h6>Match 3 <small class="text-muted">(Pool 1 vs Pool 3)</small></h6>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <select class="form-select team-select" data-match="3" data-position="a">
+                                                    <option value="">Team A</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-6">
+                                                <select class="form-select team-select" data-match="3" data-position="b">
+                                                    <option value="">Team B</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <div class="card border-primary">
+                                    <div class="card-body">
+                                        <h6>Match 4 <small class="text-muted">(Pool 1 vs Pool 3)</small></h6>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <select class="form-select team-select" data-match="4" data-position="a">
+                                                    <option value="">Team A</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-6">
+                                                <select class="form-select team-select" data-match="4" data-position="b">
+                                                    <option value="">Team B</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <div class="card border-primary">
+                                    <div class="card-body">
+                                        <h6>Match 5 <small class="text-muted">(Pool 1 vs Pool 3)</small></h6>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <select class="form-select team-select" data-match="5" data-position="a">
+                                                    <option value="">Team A</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-6">
+                                                <select class="form-select team-select" data-match="5" data-position="b">
+                                                    <option value="">Team B</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <div class="card border-success">
+                                    <div class="card-body">
+                                        <h6>Match 6 <small class="text-muted">(Pool 2 vs Pool 2)</small></h6>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <select class="form-select team-select" data-match="6" data-position="a">
+                                                    <option value="">Team A</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-6">
+                                                <select class="form-select team-select" data-match="6" data-position="b">
+                                                    <option value="">Team B</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <div class="card border-success">
+                                    <div class="card-body">
+                                        <h6>Match 7 <small class="text-muted">(Pool 2 vs Pool 2)</small></h6>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <select class="form-select team-select" data-match="7" data-position="a">
+                                                    <option value="">Team A</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-6">
+                                                <select class="form-select team-select" data-match="7" data-position="b">
+                                                    <option value="">Team B</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <div class="card border-success">
+                                    <div class="card-body">
+                                        <h6>Match 8 <small class="text-muted">(Pool 2 vs Pool 2)</small></h6>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <select class="form-select team-select" data-match="8" data-position="a">
+                                                    <option value="">Team A</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-6">
+                                                <select class="form-select team-select" data-match="8" data-position="b">
+                                                    <option value="">Team B</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <small><i class="fas fa-info-circle"></i> <strong>Swiss Seeding Rules:</strong></small><br>
+                            <small>
+                                • <span class="text-primary">Matches 1-5:</span> Pool 1 (top 5 teams) vs Pool 3 (bottom 5 teams)<br>
+                                • <span class="text-success">Matches 6-8:</span> Pool 2 (middle 6 teams) vs Pool 2<br>
+                                • <span class="text-primary"><i class="fas fa-trophy"></i> Official Draw:</span> Loads the actual Worlds 2024 first draw matchups<br>
+                                • Select matchups manually or use saved inputs. Simulation uses real win probabilities.
+                            </small>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-2">
+                                <button class="btn btn-secondary" onclick="hideFirstDrawInput()">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-primary" onclick="loadOfficialDraw()">
+                                    <i class="fas fa-trophy"></i> Official Draw
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-info" onclick="loadLastInput()" id="loadLastBtn" disabled>
+                                    <i class="fas fa-history"></i> Last Input
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-success" onclick="saveCurrentInput()">
+                                    <i class="fas fa-save"></i> Save
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-warning w-100" onclick="runSwissFromDraw()">
+                                    <i class="fas fa-play"></i> Simulate from Draw
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -657,6 +891,394 @@
             container.innerHTML = `<div class="alert alert-danger">Error: ${message}</div>`;
             container.style.display = 'block';
         }
+
+        function showFirstDrawInput() {
+            document.getElementById('first-draw-section').style.display = 'block';
+            populateTeamSelects();
+        }
+
+        function hideFirstDrawInput() {
+            document.getElementById('first-draw-section').style.display = 'none';
+        }
+
+        function populateTeamSelects() {
+            const playinWinner = document.getElementById('draw-playin-winner').value;
+            
+            // Get team list based on playin winner (5-6-5 seeding)
+            const teams = playinWinner === 'Invictus Gaming' ? 
+                ['Bilibili Gaming', 'Gen.G eSports', 'G2 Esports', 'FlyQuest', 'CTBC Flying Oyster', 
+                 'Anyone s Legend', 'Hanwha Life eSports', 'Movistar KOI', 'Vivo Keyd Stars', 
+                 'Team Secret Whales', 'Top Esports', 'Invictus Gaming', 'KT Rolster', 'Fnatic', 
+                 '100 Thieves', 'PSG Talon'] :
+                ['Bilibili Gaming', 'Gen.G eSports', 'G2 Esports', 'FlyQuest', 'CTBC Flying Oyster', 
+                 'Anyone s Legend', 'Hanwha Life eSports', 'Movistar KOI', 'Vivo Keyd Stars', 
+                 'Team Secret Whales', 'KT Rolster', 'T1', 'Top Esports', 'Fnatic', 
+                 '100 Thieves', 'PSG Talon'];
+
+            // Divide teams into pools (5-6-5 distribution)
+            const pool1 = teams.slice(0, 5);   // Top 5 teams
+            const pool2 = teams.slice(5, 11);  // Middle 6 teams  
+            const pool3 = teams.slice(11, 16); // Bottom 5 teams
+            
+            // Populate selects based on Swiss seeding rules
+            // Matches 1-5: Pool 1 vs Pool 3
+            for (let i = 1; i <= 5; i++) {
+                const teamASelect = document.querySelector(`[data-match="${i}"][data-position="a"]`);
+                const teamBSelect = document.querySelector(`[data-match="${i}"][data-position="b"]`);
+                
+                // Team A options: Pool 1 teams
+                teamASelect.innerHTML = '<option value="">Select Pool 1 Team</option>';
+                pool1.forEach(team => {
+                    teamASelect.innerHTML += `<option value="${team}">${team} (Pool 1)</option>`;
+                });
+                
+                // Team B options: Pool 3 teams
+                teamBSelect.innerHTML = '<option value="">Select Pool 3 Team</option>';
+                pool3.forEach(team => {
+                    teamBSelect.innerHTML += `<option value="${team}">${team} (Pool 3)</option>`;
+                });
+            }
+            
+            // Matches 6-8: Pool 2 vs Pool 2
+            for (let i = 6; i <= 8; i++) {
+                const teamASelect = document.querySelector(`[data-match="${i}"][data-position="a"]`);
+                const teamBSelect = document.querySelector(`[data-match="${i}"][data-position="b"]`);
+                
+                // Both teams from Pool 2
+                teamASelect.innerHTML = '<option value="">Select Pool 2 Team A</option>';
+                teamBSelect.innerHTML = '<option value="">Select Pool 2 Team B</option>';
+                pool2.forEach(team => {
+                    teamASelect.innerHTML += `<option value="${team}">${team} (Pool 2)</option>`;
+                    teamBSelect.innerHTML += `<option value="${team}">${team} (Pool 2)</option>`;
+                });
+            }
+        }
+
+        async function runSwissFromDraw() {
+            const playinWinner = document.getElementById('draw-playin-winner').value;
+            const numSimulations = parseInt(document.getElementById('draw-simulations').value);
+            const simulationType = document.getElementById('simulation-type').value;
+            
+            // Collect matchups
+            const matchups = [];
+            for (let i = 1; i <= 8; i++) {
+                const teamA = document.querySelector(`[data-match="${i}"][data-position="a"]`).value;
+                const teamB = document.querySelector(`[data-match="${i}"][data-position="b"]`).value;
+                
+                if (teamA && teamB && teamA !== teamB) {
+                    matchups.push({
+                        team_a: teamA,
+                        team_b: teamB
+                    });
+                }
+            }
+            
+            if (matchups.length !== 8) {
+                alert('Please select all 8 matchups with different teams');
+                return;
+            }
+            
+            // Check for duplicate teams
+            const allTeams = [];
+            matchups.forEach(match => {
+                allTeams.push(match.team_a, match.team_b);
+            });
+            const uniqueTeams = new Set(allTeams);
+            if (uniqueTeams.size !== 16) {
+                alert('Each team should appear exactly once in the matchups');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/swiss/simulate_from_draw', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        first_draw_matchups: matchups,
+                        playin_winner: playinWinner,
+                        num_simulations: numSimulations,
+                        simulation_type: simulationType
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    if (data.simulation_type === 'matchup_results') {
+                        displayMatchupResults(data.result);
+                    } else {
+                        displayFirstDrawResults(data.result);
+                    }
+                    hideFirstDrawInput();
+                } else {
+                    showError(data.error);
+                }
+            } catch (error) {
+                showError('Failed to run simulation: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function displayFirstDrawResults(result) {
+            const container = document.getElementById('results-container');
+            
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h4><i class="fas fa-edit"></i> Swiss Simulation from First Draw (${result.num_simulations} simulations)</h4>
+                        <small>Based on actual Round 1 matchups with simulated outcomes</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h5>Team Qualification Rates</h5>
+                                <div class="row">
+                                    ${result.qualification_stats.map(teamStat => `
+                                        <div class="col-md-6 mb-2">
+                                            <div class="team-card ${teamStat.percentage > 50 ? 'qualified' : 'eliminated'}">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <strong>${teamStat.team}</strong>
+                                                        <span class="region-badge region-${getTeamRegion(teamStat.team)}">${getTeamRegion(teamStat.team)}</span>
+                                                    </div>
+                                                    <div class="record-display">${teamStat.percentage.toFixed(1)}%</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <h5>First Draw Matchups Used</h5>
+                                ${result.first_draw_matchups.map((match, index) => `
+                                    <div class="mb-2">
+                                        <small><strong>Match ${index + 1}:</strong></small><br>
+                                        <small>${match.team_a} vs ${match.team_b}</small>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.style.display = 'block';
+        }
+
+        function saveCurrentInput() {
+            const playinWinner = document.getElementById('draw-playin-winner').value;
+            const numSimulations = document.getElementById('draw-simulations').value;
+            
+            // Collect current matchups
+            const matchups = [];
+            for (let i = 1; i <= 8; i++) {
+                const teamA = document.querySelector(`[data-match="${i}"][data-position="a"]`).value;
+                const teamB = document.querySelector(`[data-match="${i}"][data-position="b"]`).value;
+                
+                matchups.push({
+                    match: i,
+                    team_a: teamA,
+                    team_b: teamB
+                });
+            }
+            
+            const savedInput = {
+                playin_winner: playinWinner,
+                num_simulations: numSimulations,
+                matchups: matchups,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Save to localStorage
+            localStorage.setItem('swiss_last_input', JSON.stringify(savedInput));
+            
+            // Enable load button
+            document.getElementById('loadLastBtn').disabled = false;
+            
+            alert('Input saved successfully!');
+        }
+
+        function loadLastInput() {
+            const savedData = localStorage.getItem('swiss_last_input');
+            
+            if (!savedData) {
+                alert('No saved input found');
+                return;
+            }
+            
+            try {
+                const savedInput = JSON.parse(savedData);
+                
+                // Set playin winner
+                document.getElementById('draw-playin-winner').value = savedInput.playin_winner;
+                document.getElementById('draw-simulations').value = savedInput.num_simulations;
+                
+                // Populate team selects first
+                populateTeamSelects();
+                
+                // Wait a bit for selects to populate, then set values
+                setTimeout(() => {
+                    savedInput.matchups.forEach(matchup => {
+                        const teamASelect = document.querySelector(`[data-match="${matchup.match}"][data-position="a"]`);
+                        const teamBSelect = document.querySelector(`[data-match="${matchup.match}"][data-position="b"]`);
+                        
+                        if (teamASelect && teamBSelect) {
+                            teamASelect.value = matchup.team_a;
+                            teamBSelect.value = matchup.team_b;
+                        }
+                    });
+                    
+                    const saveDate = new Date(savedInput.timestamp).toLocaleString();
+                    alert(`Last input loaded successfully!\nSaved on: ${saveDate}`);
+                }, 100);
+                
+            } catch (error) {
+                alert('Error loading saved input: ' + error.message);
+            }
+        }
+
+        function loadOfficialDraw() {
+            // Official first draw matchups
+            const officialMatchups = [
+                { match: 1, team_a: 'Bilibili Gaming', team_b: '100 Thieves' },
+                { match: 2, team_a: 'Gen.G eSports', team_b: 'PSG Talon' },
+                { match: 3, team_a: 'FlyQuest', team_b: 'T1' },
+                { match: 4, team_a: 'CTBC Flying Oyster', team_b: 'Fnatic' },
+                { match: 5, team_a: 'G2 Esports', team_b: 'Top Esports' },
+                { match: 6, team_a: 'Anyone s Legend', team_b: 'Hanwha Life eSports' },
+                { match: 7, team_a: 'Vivo Keyd Stars', team_b: 'Team Secret Whales' },
+                { match: 8, team_a: 'Movistar KOI', team_b: 'KT Rolster' }
+            ];
+            
+            // Set T1 as playin winner (since T1 is in the official draw)
+            document.getElementById('draw-playin-winner').value = 'T1';
+            
+            // Populate team selects first
+            populateTeamSelects();
+            
+            // Wait a bit for selects to populate, then set official values
+            setTimeout(() => {
+                officialMatchups.forEach(matchup => {
+                    const teamASelect = document.querySelector(`[data-match="${matchup.match}"][data-position="a"]`);
+                    const teamBSelect = document.querySelector(`[data-match="${matchup.match}"][data-position="b"]`);
+                    
+                    if (teamASelect && teamBSelect) {
+                        teamASelect.value = matchup.team_a;
+                        teamBSelect.value = matchup.team_b;
+                    }
+                });
+                
+                alert('Official Worlds 2024 first draw loaded successfully!');
+            }, 100);
+        }
+
+        function checkForSavedInput() {
+            const savedData = localStorage.getItem('swiss_last_input');
+            if (savedData) {
+                document.getElementById('loadLastBtn').disabled = false;
+            }
+        }
+
+        function displayMatchupResults(result) {
+            const container = document.getElementById('results-container');
+            
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h4><i class="fas fa-dice"></i> Round 1 Matchup Results (${result.num_simulations} simulations)</h4>
+                        <small>Probability of each team winning their Round 1 match</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            ${Object.entries(result.matchup_results).map(([matchId, matchResult]) => `
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-${matchResult.confidence > 70 ? 'success' : matchResult.confidence > 60 ? 'warning' : 'danger'}">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">${matchId}: ${matchResult.matchup}</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-6 text-center">
+                                                    <div class="team-result">
+                                                        <strong class="${matchResult.team_a_win_rate > matchResult.team_b_win_rate ? 'text-success' : 'text-muted'}">${matchResult.team_a}</strong>
+                                                        <div class="h4 ${matchResult.team_a_win_rate > matchResult.team_b_win_rate ? 'text-success' : 'text-muted'}">
+                                                            ${matchResult.team_a_win_rate.toFixed(1)}%
+                                                        </div>
+                                                        <small>${matchResult.team_a_wins}/${result.num_simulations} wins</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6 text-center">
+                                                    <div class="team-result">
+                                                        <strong class="${matchResult.team_b_win_rate > matchResult.team_a_win_rate ? 'text-success' : 'text-muted'}">${matchResult.team_b}</strong>
+                                                        <div class="h4 ${matchResult.team_b_win_rate > matchResult.team_a_win_rate ? 'text-success' : 'text-muted'}">
+                                                            ${matchResult.team_b_win_rate.toFixed(1)}%
+                                                        </div>
+                                                        <small>${matchResult.team_b_wins}/${result.num_simulations} wins</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="text-center mt-2">
+                                                <small>
+                                                    <i class="fas fa-trophy"></i> Favorite: 
+                                                    <strong class="text-primary">${matchResult.most_likely_winner}</strong>
+                                                    (${matchResult.confidence.toFixed(1)}%)
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="alert alert-success mt-3">
+                            <h6><i class="fas fa-chart-bar"></i> Round 1 Analysis</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Most Confident Predictions:</strong>
+                                    <ul class="mb-0">
+                                        ${Object.entries(result.matchup_results)
+                                            .sort(([,a], [,b]) => b.confidence - a.confidence)
+                                            .slice(0, 3)
+                                            .map(([matchId, matchResult]) => `
+                                                <li>${matchResult.most_likely_winner} (${matchResult.confidence.toFixed(1)}%)</li>
+                                            `).join('')}
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Closest Matches:</strong>
+                                    <ul class="mb-0">
+                                        ${Object.entries(result.matchup_results)
+                                            .sort(([,a], [,b]) => a.confidence - b.confidence)
+                                            .slice(0, 3)
+                                            .map(([matchId, matchResult]) => `
+                                                <li>${matchResult.matchup} (${matchResult.confidence.toFixed(1)}%)</li>
+                                            `).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.style.display = 'block';
+        }
+
+        // Update team selects when playin winner changes
+        document.addEventListener('DOMContentLoaded', function() {
+            const playinSelect = document.getElementById('draw-playin-winner');
+            if (playinSelect) {
+                playinSelect.addEventListener('change', populateTeamSelects);
+            }
+            
+            // Check for saved input on page load
+            checkForSavedInput();
+        });
     </script>
 </body>
 
