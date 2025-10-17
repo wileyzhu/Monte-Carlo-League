@@ -486,17 +486,30 @@ def simulate_swiss_stage():
             analysis_type = data.get('analysis_type', 'qualification')
             
             if analysis_type == 'championship':
-                # Use proper WorldsTournament for championship analysis FROM ROUND 1 STATE
-                # ACTUAL Round 1 results
-                round1_records = {
-                    # 1-0 teams (Round 1 winners)
-                    'Team Secret Whales': [1, 0], 'CTBC Flying Oyster': [1, 0], 'KT Rolster': [1, 0],
-                    '100 Thieves': [1, 0], 'T1': [1, 0], 'Anyone s Legend': [1, 0],
-                    'Top Esports': [1, 0], 'Gen.G eSports': [1, 0],
-                    # 0-1 teams (Round 1 losers)
-                    'Vivo Keyd Stars': [0, 1], 'Fnatic': [0, 1], 'Movistar KOI': [0, 1],
-                    'Bilibili Gaming': [0, 1], 'FlyQuest': [0, 1], 'Hanwha Life eSports': [0, 1],
-                    'G2 Esports': [0, 1], 'PSG Talon': [0, 1]
+                # Use proper WorldsTournament for championship analysis FROM ROUND 2 STATE
+                # State BEFORE Round 3 (after Round 2 completed) - predict Round 3 outcomes
+                round2_records = {
+                    # 2-0 teams (after Round 2)
+                    'KT Rolster': [2, 0],           # Round 1: W, Round 2: W (beat TSW)
+                    'Top Esports': [2, 0],          # Round 1: W, Round 2: W (beat 100)
+                    'CTBC Flying Oyster': [2, 0],   # Round 1: W, Round 2: W (beat T1)
+                    'Anyone s Legend': [2, 0],      # Round 1: W, Round 2: W (beat GEN)
+                    
+                    # 1-1 teams (after Round 2)
+                    'Team Secret Whales': [1, 1],   # Round 1: W, Round 2: L (lost to KT)
+                    'FlyQuest': [1, 1],             # Round 1: L, Round 2: W (beat VKS)
+                    'Gen.G eSports': [1, 1],        # Round 1: W, Round 2: L (lost to AL)
+                    'T1': [1, 1],                   # Round 1: W, Round 2: L (lost to CFO)
+                    'G2 Esports': [1, 1],           # Round 1: L, Round 2: W (beat KOI)
+                    'Bilibili Gaming': [1, 1],      # Round 1: L, Round 2: W (beat FNC)
+                    '100 Thieves': [1, 1],          # Round 1: W, Round 2: L (lost to TES)
+                    'Hanwha Life eSports': [1, 1],  # Round 1: L, Round 2: W (beat PSG)
+                    
+                    # 0-2 teams (after Round 2)
+                    'Movistar KOI': [0, 2],         # Round 1: L, Round 2: L (lost to G2)
+                    'Fnatic': [0, 2],               # Round 1: L, Round 2: L (lost to BLG)
+                    'Vivo Keyd Stars': [0, 2],      # Round 1: L, Round 2: L (lost to FLY)
+                    'PSG Talon': [0, 2]             # Round 1: L, Round 2: L (lost to HLE)
                 }
                 
                 # Create the real results state for simulate_from_real_results
@@ -504,8 +517,8 @@ def simulate_swiss_stage():
                     'playin_completed': True,
                     'playin_winner': playin_winner,
                     'swiss_completed': False,
-                    'swiss_current_records': round1_records,
-                    'swiss_round': 2,  # Starting from Round 2 (Round 1 completed)
+                    'swiss_current_records': round2_records,
+                    'swiss_round': 3,  # Starting from Round 3 (Round 2 completed)
                     'elimination_completed': False
                 }
                 
@@ -532,33 +545,89 @@ def simulate_swiss_stage():
             
             else:
                 # For other analysis types, use the existing Swiss simulation logic
-                # ACTUAL Round 1 results
-                round1_records = {
-                    # 1-0 teams (Round 1 winners)
-                    'Team Secret Whales': [1, 0], 'CTBC Flying Oyster': [1, 0], 'KT Rolster': [1, 0],
-                    '100 Thieves': [1, 0], 'T1': [1, 0], 'Anyone s Legend': [1, 0],
-                    'Top Esports': [1, 0], 'Gen.G eSports': [1, 0],
-                    # 0-1 teams (Round 1 losers)
-                    'Vivo Keyd Stars': [0, 1], 'Fnatic': [0, 1], 'Movistar KOI': [0, 1],
-                    'Bilibili Gaming': [0, 1], 'FlyQuest': [0, 1], 'Hanwha Life eSports': [0, 1],
-                    'G2 Esports': [0, 1], 'PSG Talon': [0, 1]
+                # State BEFORE Round 3 (after Round 2 completed) - predict Round 3 outcomes
+                round2_records = {
+                    # 2-0 teams (after Round 2)
+                    'KT Rolster': [2, 0],           # Round 1: W, Round 2: W (beat TSW)
+                    'Top Esports': [2, 0],          # Round 1: W, Round 2: W (beat 100)
+                    'CTBC Flying Oyster': [2, 0],   # Round 1: W, Round 2: W (beat T1)
+                    'Anyone s Legend': [2, 0],      # Round 1: W, Round 2: W (beat GEN)
+                    
+                    # 1-1 teams (after Round 2)
+                    'Team Secret Whales': [1, 1],   # Round 1: W, Round 2: L (lost to KT)
+                    'FlyQuest': [1, 1],             # Round 1: L, Round 2: W (beat VKS)
+                    'Gen.G eSports': [1, 1],        # Round 1: W, Round 2: L (lost to AL)
+                    'T1': [1, 1],                   # Round 1: W, Round 2: L (lost to CFO)
+                    'G2 Esports': [1, 1],           # Round 1: L, Round 2: W (beat KOI)
+                    'Bilibili Gaming': [1, 1],      # Round 1: L, Round 2: W (beat FNC)
+                    '100 Thieves': [1, 1],          # Round 1: W, Round 2: L (lost to TES)
+                    'Hanwha Life eSports': [1, 1],  # Round 1: L, Round 2: W (beat PSG)
+                    
+                    # 0-2 teams (after Round 2)
+                    'Movistar KOI': [0, 2],         # Round 1: L, Round 2: L (lost to G2)
+                    'Fnatic': [0, 2],               # Round 1: L, Round 2: L (lost to BLG)
+                    'Vivo Keyd Stars': [0, 2],      # Round 1: L, Round 2: L (lost to FLY)
+                    'PSG Talon': [0, 2]             # Round 1: L, Round 2: L (lost to HLE)
                 }
                 
-                swiss_teams = list(round1_records.keys())
+                swiss_teams = list(round2_records.keys())
                 
                 all_qualified = []
                 qualification_counts = {}
                 regional_stats = {}
                 
                 for _ in range(num_simulations):
-                    # Start with Round 1 records
-                    current_records = {team: record.copy() for team, record in round1_records.items()}
+                    # Start with Round 2 records
+                    current_records = {team: record.copy() for team, record in round2_records.items()}
                     
-                    # Continue Swiss stage from Round 2
-                    round_num = 2
+                    # ROUND 3: Use ACTUAL matchup draws (not random pairing)
+                    round3_matches = [
+                        # High (2-0 vs 2-0) - BO3
+                        ('KT Rolster', 'Top Esports'),
+                        ('CTBC Flying Oyster', 'Anyone s Legend'),
+                        # Middle (1-1 vs 1-1) - BO1
+                        ('Team Secret Whales', 'FlyQuest'),
+                        ('Gen.G eSports', 'T1'),
+                        ('G2 Esports', 'Bilibili Gaming'),
+                        ('100 Thieves', 'Hanwha Life eSports'),
+                        # Low (0-2 vs 0-2) - BO3
+                        ('Movistar KOI', 'Fnatic'),
+                        ('Vivo Keyd Stars', 'PSG Talon')
+                    ]
+                    
+                    # Simulate Round 3 with actual draws
+                    for team1, team2 in round3_matches:
+                        game_win_prob = worlds.get_win_probability(team1, team2)
+                        
+                        # Check if this is a BO3 match (2-0 vs 2-0 or 0-2 vs 0-2)
+                        wins1, losses1 = current_records[team1]
+                        wins2, losses2 = current_records[team2]
+                        is_bo3 = (wins1 == 2 and losses1 == 0 and wins2 == 2 and losses2 == 0) or \
+                                 (wins1 == 0 and losses1 == 2 and wins2 == 0 and losses2 == 2)
+                        
+                        if is_bo3:
+                            # Calculate BO3 win probability
+                            bo3_win_prob = (game_win_prob ** 2) + (2 * (game_win_prob ** 2) * (1 - game_win_prob))
+                            if random.random() < bo3_win_prob:
+                                winner, loser = team1, team2
+                            else:
+                                winner, loser = team2, team1
+                        else:
+                            # BO1
+                            if random.random() < game_win_prob:
+                                winner, loser = team1, team2
+                            else:
+                                winner, loser = team2, team1
+                        
+                        # Update records
+                        current_records[winner][0] += 1  # Add win
+                        current_records[loser][1] += 1   # Add loss
+                    
+                    # Continue Swiss stage from Round 4 onwards (if needed)
+                    round_num = 4
                     
                     while not all(wins >= 3 or losses >= 3 for wins, losses in current_records.values()):
-                        # Determine matchups for this round (simplified Swiss pairing)
+                        # Determine matchups for remaining rounds (Swiss pairing)
                         teams_by_record = {}
                         for team, (wins, losses) in current_records.items():
                             if wins < 3 and losses < 3:  # Team still active
@@ -646,13 +715,7 @@ def simulate_swiss_stage():
                 'seeding_strategy': seeding_strategy
             }
             
-            if analysis_type == 'championship':
-                # Ensure record_distribution is never empty
-                if not record_distribution:
-                    # If no championships recorded, create a default distribution
-                    record_distribution = {'No Champion': 0}
-                result['record_distribution'] = record_distribution
-            elif analysis_type == 'regional':
+            if analysis_type == 'regional':
                 result['regional_stats'] = formatted_regional_stats
             
             return jsonify({
@@ -1007,39 +1070,55 @@ def simulate_round2_matchups():
 
 @app.route('/api/swiss/match_predictions', methods=['POST'])
 def get_match_predictions():
-    """Get Round 2 match predictions with real probabilities"""
+    """Get Round 3 match predictions with real probabilities"""
     try:
         worlds = initialize_tournament()
         
-        # Round 2 matchups based on actual draw
+        # Round 3 matchups based on actual draw (after Round 2 completed)
+        # High matches (2-0 vs 2-0) - BO3
         high_matches = [
-            {'team_a': 'Team Secret Whales', 'team_b': 'KT Rolster'},
-            {'team_a': 'Top Esports', 'team_b': '100 Thieves'},
-            {'team_a': 'CTBC Flying Oyster', 'team_b': 'T1'},
-            {'team_a': 'Gen.G eSports', 'team_b': 'Anyone s Legend'}
+            {'team_a': 'KT Rolster', 'team_b': 'Top Esports', 'format': 'BO3'},
+            {'team_a': 'CTBC Flying Oyster', 'team_b': 'Anyone s Legend', 'format': 'BO3'}
         ]
         
+        # Middle matches (1-1 vs 1-1) - BO1
+        middle_matches = [
+            {'team_a': 'Team Secret Whales', 'team_b': 'FlyQuest', 'format': 'BO1'},
+            {'team_a': 'Gen.G eSports', 'team_b': 'T1', 'format': 'BO1'},
+            {'team_a': 'G2 Esports', 'team_b': 'Bilibili Gaming', 'format': 'BO1'},
+            {'team_a': '100 Thieves', 'team_b': 'Hanwha Life eSports', 'format': 'BO1'}
+        ]
+        
+        # Low matches (0-2 vs 0-2) - BO3
         low_matches = [
-            {'team_a': 'FlyQuest', 'team_b': 'Vivo Keyd Stars'},
-            {'team_a': 'G2 Esports', 'team_b': 'Movistar KOI'},
-            {'team_a': 'Bilibili Gaming', 'team_b': 'Fnatic'},
-            {'team_a': 'Hanwha Life eSports', 'team_b': 'PSG Talon'}
+            {'team_a': 'Movistar KOI', 'team_b': 'Fnatic', 'format': 'BO3'},
+            {'team_a': 'Vivo Keyd Stars', 'team_b': 'PSG Talon', 'format': 'BO3'}
         ]
         
-        # Calculate real probabilities for high matches
+        # Calculate real probabilities for high matches (BO3)
         for match in high_matches:
+            game_win_prob = worlds.get_win_probability(match['team_a'], match['team_b'])
+            # BO3 win probability
+            bo3_win_prob = calculate_bo3_win_probability(game_win_prob)
+            match['team_a_prob'] = bo3_win_prob * 100
+            match['team_b_prob'] = (1 - bo3_win_prob) * 100
+        
+        # Calculate real probabilities for middle matches (BO1)
+        for match in middle_matches:
             win_prob_a = worlds.get_win_probability(match['team_a'], match['team_b'])
             match['team_a_prob'] = win_prob_a * 100
             match['team_b_prob'] = (1 - win_prob_a) * 100
         
-        # Calculate real probabilities for low matches
+        # Calculate real probabilities for low matches (BO3)
         for match in low_matches:
-            win_prob_a = worlds.get_win_probability(match['team_a'], match['team_b'])
-            match['team_a_prob'] = win_prob_a * 100
-            match['team_b_prob'] = (1 - win_prob_a) * 100
+            game_win_prob = worlds.get_win_probability(match['team_a'], match['team_b'])
+            # BO3 win probability
+            bo3_win_prob = calculate_bo3_win_probability(game_win_prob)
+            match['team_a_prob'] = bo3_win_prob * 100
+            match['team_b_prob'] = (1 - bo3_win_prob) * 100
         
         # Find most competitive and biggest favorite
-        all_matches = high_matches + low_matches
+        all_matches = high_matches + middle_matches + low_matches
         
         most_competitive = min(all_matches, key=lambda m: abs(m['team_a_prob'] - 50))
         most_competitive_diff = abs(most_competitive['team_a_prob'] - 50) * 2
@@ -1049,6 +1128,7 @@ def get_match_predictions():
         
         result = {
             'high_matches': high_matches,
+            'middle_matches': middle_matches,
             'low_matches': low_matches,
             'most_competitive': {
                 'matchup': f"{most_competitive['team_a']} vs {most_competitive['team_b']}",
@@ -1072,6 +1152,124 @@ def get_match_predictions():
         }), 500
 
 # Removed simulate_elimination_bracket - now using proper WorldsTournament.run_multiple_simulations()
+
+def calculate_bo3_win_probability(p):
+    """
+    Calculate BO3 series win probability given single game win probability.
+    Team needs to win 2 out of 3 games.
+    Possible winning scenarios: WW, WLW, LWW
+    """
+    # Win 2-0: p * p
+    # Win 2-1 (WLW): p * (1-p) * p
+    # Win 2-1 (LWW): (1-p) * p * p
+    bo3_prob = (p * p) + (p * (1-p) * p) + ((1-p) * p * p)
+    return bo3_prob
+
+@app.route('/api/swiss/simulate_round3_outcomes', methods=['POST'])
+def simulate_round3_outcomes():
+    """Simulate Round 3 match outcomes multiple times to show win distributions"""
+    try:
+        data = request.get_json()
+        num_simulations = data.get('num_simulations', 1000)
+        playin_winner = data.get('playin_winner', 'T1')
+        
+        worlds = initialize_tournament()
+        
+        # Round 3 matchups based on Round 2 state
+        # High matches (2-0 vs 2-0) are BO3, others are BO1
+        high_matches_bo3 = [
+            ('KT Rolster', 'Top Esports'),
+            ('CTBC Flying Oyster', 'Anyone s Legend')
+        ]
+        
+        middle_matches_bo1 = [
+            ('Team Secret Whales', 'FlyQuest'),
+            ('Gen.G eSports', 'T1'),
+            ('G2 Esports', 'Bilibili Gaming'),
+            ('100 Thieves', 'Hanwha Life eSports')
+        ]
+        
+        low_matches_bo3 = [
+            ('Movistar KOI', 'Fnatic'),
+            ('Vivo Keyd Stars', 'PSG Talon')
+        ]
+        
+        # Simulate each match multiple times
+        match_results = {}
+        
+        # High matches - BO3
+        for team_a, team_b in high_matches_bo3:
+            game_win_prob = worlds.get_win_probability(team_a, team_b)
+            bo3_win_prob = calculate_bo3_win_probability(game_win_prob)
+            
+            # Simulate this match num_simulations times
+            team_a_wins = sum(1 for _ in range(num_simulations) if random.random() < bo3_win_prob)
+            team_b_wins = num_simulations - team_a_wins
+            
+            match_key = f"{team_a.lower().replace(' ', '_').replace('.', '')}_vs_{team_b.lower().replace(' ', '_').replace('.', '')}"
+            match_results[match_key] = {
+                'team_a': team_a,
+                'team_b': team_b,
+                'team_a_wins': team_a_wins,
+                'team_b_wins': team_b_wins,
+                'team_a_pct': (team_a_wins / num_simulations) * 100,
+                'team_b_pct': (team_b_wins / num_simulations) * 100,
+                'format': 'BO3'
+            }
+        
+        # Middle matches - BO1
+        for team_a, team_b in middle_matches_bo1:
+            win_prob_a = worlds.get_win_probability(team_a, team_b)
+            
+            # Simulate this match num_simulations times
+            team_a_wins = sum(1 for _ in range(num_simulations) if random.random() < win_prob_a)
+            team_b_wins = num_simulations - team_a_wins
+            
+            match_key = f"{team_a.lower().replace(' ', '_').replace('.', '')}_vs_{team_b.lower().replace(' ', '_').replace('.', '')}"
+            match_results[match_key] = {
+                'team_a': team_a,
+                'team_b': team_b,
+                'team_a_wins': team_a_wins,
+                'team_b_wins': team_b_wins,
+                'team_a_pct': (team_a_wins / num_simulations) * 100,
+                'team_b_pct': (team_b_wins / num_simulations) * 100,
+                'format': 'BO1'
+            }
+        
+        # Low matches - BO3
+        for team_a, team_b in low_matches_bo3:
+            game_win_prob = worlds.get_win_probability(team_a, team_b)
+            bo3_win_prob = calculate_bo3_win_probability(game_win_prob)
+            
+            # Simulate this match num_simulations times
+            team_a_wins = sum(1 for _ in range(num_simulations) if random.random() < bo3_win_prob)
+            team_b_wins = num_simulations - team_a_wins
+            
+            match_key = f"{team_a.lower().replace(' ', '_').replace('.', '')}_vs_{team_b.lower().replace(' ', '_').replace('.', '')}"
+            match_results[match_key] = {
+                'team_a': team_a,
+                'team_b': team_b,
+                'team_a_wins': team_a_wins,
+                'team_b_wins': team_b_wins,
+                'team_a_pct': (team_a_wins / num_simulations) * 100,
+                'team_b_pct': (team_b_wins / num_simulations) * 100,
+                'format': 'BO3'
+            }
+        
+        return jsonify({
+            'success': True,
+            'result': {
+                'num_simulations': num_simulations,
+                'playin_winner': playin_winner,
+                'matches': match_results
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 if __name__ == '__main__':
     import os

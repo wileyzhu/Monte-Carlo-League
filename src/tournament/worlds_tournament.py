@@ -556,39 +556,87 @@ class WorldsTournament:
         # Make a copy of current records to work with
         records = {team: record.copy() for team, record in current_records.items()}
         
-        # Continue Swiss rounds until all teams are eliminated or qualified
-        round_num = 2  # Starting from Round 2 (Round 1 completed)
+        # Determine what round we're starting from based on records
+        # If we have teams at 2-0, 1-1, 0-2, we're starting Round 3
+        has_2_0 = any(wins == 2 and losses == 0 for wins, losses in records.values())
+        starting_round = 3 if has_2_0 else 2
+        
+        round_num = starting_round
         
         while not all(wins >= 3 or losses >= 3 for wins, losses in records.values()):
-            # Group teams by their current record
-            teams_by_record = {}
-            for team, (wins, losses) in records.items():
-                if wins < 3 and losses < 3:  # Team still active
-                    record_key = f"{wins}-{losses}"
-                    if record_key not in teams_by_record:
-                        teams_by_record[record_key] = []
-                    teams_by_record[record_key].append(team)
-            
-            # Pair teams within same record groups (proper Swiss pairing)
-            round_matches = []
-            for record_group, teams in teams_by_record.items():
-                random.shuffle(teams)
-                for i in range(0, len(teams) - 1, 2):
-                    if i + 1 < len(teams):
-                        round_matches.append((teams[i], teams[i + 1]))
+            # Special handling for Round 3 - use ACTUAL draws
+            if round_num == 3:
+                # ACTUAL Round 3 matchup draws
+                # High matches (2-0 vs 2-0) are BO3, others are BO1
+                high_matches_bo3 = [
+                    ('KT Rolster', 'Top Esports'),
+                    ('CTBC Flying Oyster', 'Anyone s Legend')
+                ]
+                
+                other_matches_bo1 = [
+                    # Middle (1-1 vs 1-1)
+                    ('Team Secret Whales', 'FlyQuest'),
+                    ('Gen.G eSports', 'T1'),
+                    ('G2 Esports', 'Bilibili Gaming'),
+                    ('100 Thieves', 'Hanwha Life eSports'),
+                    # Low (0-2 vs 0-2)
+                    ('Movistar KOI', 'Fnatic'),
+                    ('Vivo Keyd Stars', 'PSG Talon')
+                ]
+                
+                round_matches = high_matches_bo3 + other_matches_bo1
+            else:
+                # For other rounds, use standard Swiss pairing
+                teams_by_record = {}
+                for team, (wins, losses) in records.items():
+                    if wins < 3 and losses < 3:  # Team still active
+                        record_key = f"{wins}-{losses}"
+                        if record_key not in teams_by_record:
+                            teams_by_record[record_key] = []
+                        teams_by_record[record_key].append(team)
+                
+                # Pair teams within same record groups (proper Swiss pairing)
+                round_matches = []
+                for record_group, teams in teams_by_record.items():
+                    random.shuffle(teams)
+                    for i in range(0, len(teams) - 1, 2):
+                        if i + 1 < len(teams):
+                            round_matches.append((teams[i], teams[i + 1]))
             
             # Simulate matches for this round
             for team1, team2 in round_matches:
-                win_prob = self.get_win_probability(team1, team2)
-                
-                if random.random() < win_prob:
-                    winner, loser = team1, team2
-                else:
-                    winner, loser = team2, team1
-                
-                # Update records
-                records[winner][0] += 1  # Add win
-                records[loser][1] += 1   # Add loss
+                # Only simulate if both teams are still active
+                if team1 in records and team2 in records:
+                    wins1, losses1 = records[team1]
+                    wins2, losses2 = records[team2]
+                    
+                    if wins1 < 3 and losses1 < 3 and wins2 < 3 and losses2 < 3:
+                        game_win_prob = self.get_win_probability(team1, team2)
+                        
+                        # Check if this is a BO3 match (Round 3 high matches)
+                        is_bo3 = (round_num == 3 and wins1 == 2 and losses1 == 0 and wins2 == 2 and losses2 == 0)
+                        
+                        if is_bo3:
+                            # Simulate BO3 series
+                            # Calculate BO3 win probability: P(win 2-0) + P(win 2-1)
+                            # P(2-0) = p^2
+                            # P(2-1) = 2 * p^2 * (1-p)  [can win in WLW or LWW]
+                            bo3_win_prob = (game_win_prob ** 2) + (2 * (game_win_prob ** 2) * (1 - game_win_prob))
+                            
+                            if random.random() < bo3_win_prob:
+                                winner, loser = team1, team2
+                            else:
+                                winner, loser = team2, team1
+                        else:
+                            # Regular BO1
+                            if random.random() < game_win_prob:
+                                winner, loser = team1, team2
+                            else:
+                                winner, loser = team2, team1
+                        
+                        # Update records
+                        records[winner][0] += 1  # Add win
+                        records[loser][1] += 1   # Add loss
             
             round_num += 1
             if round_num > 10:  # Safety break to prevent infinite loops
