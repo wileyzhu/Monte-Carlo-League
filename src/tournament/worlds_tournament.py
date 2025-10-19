@@ -556,6 +556,9 @@ class WorldsTournament:
         # Make a copy of current records to work with
         records = {team: record.copy() for team, record in current_records.items()}
         
+        # Track match history to avoid rematches
+        match_history = set()
+        
         # Determine what round we're starting from based on records
         # If we have teams at 2-0, 1-1, 0-2, we're starting Round 3
         has_2_0 = any(wins == 2 and losses == 0 for wins, losses in records.values())
@@ -585,8 +588,13 @@ class WorldsTournament:
                 ]
                 
                 round_matches = high_matches_bo3 + other_matches_bo1
+                
+                # Add these matches to history
+                for team1, team2 in round_matches:
+                    matchup = tuple(sorted([team1, team2]))
+                    match_history.add(matchup)
             else:
-                # For other rounds, use standard Swiss pairing
+                # For other rounds, use standard Swiss pairing with rematch avoidance
                 teams_by_record = {}
                 for team, (wins, losses) in records.items():
                     if wins < 3 and losses < 3:  # Team still active
@@ -595,13 +603,45 @@ class WorldsTournament:
                             teams_by_record[record_key] = []
                         teams_by_record[record_key].append(team)
                 
-                # Pair teams within same record groups (proper Swiss pairing)
+                # Pair teams within same record groups, avoiding rematches
                 round_matches = []
                 for record_group, teams in teams_by_record.items():
                     random.shuffle(teams)
-                    for i in range(0, len(teams) - 1, 2):
-                        if i + 1 < len(teams):
-                            round_matches.append((teams[i], teams[i + 1]))
+                    
+                    paired = set()
+                    pairings = []
+                    
+                    for i, team_a in enumerate(teams):
+                        if team_a in paired:
+                            continue
+                        
+                        # Try to find a valid opponent (not played before)
+                        for j in range(i + 1, len(teams)):
+                            team_b = teams[j]
+                            if team_b in paired:
+                                continue
+                            
+                            matchup = tuple(sorted([team_a, team_b]))
+                            if matchup not in match_history:
+                                # Valid pairing found
+                                pairings.append((team_a, team_b))
+                                paired.add(team_a)
+                                paired.add(team_b)
+                                match_history.add(matchup)
+                                break
+                        else:
+                            # No valid opponent found without rematch, pair with anyone remaining
+                            for j in range(i + 1, len(teams)):
+                                team_b = teams[j]
+                                if team_b not in paired:
+                                    pairings.append((team_a, team_b))
+                                    paired.add(team_a)
+                                    paired.add(team_b)
+                                    matchup = tuple(sorted([team_a, team_b]))
+                                    match_history.add(matchup)
+                                    break
+                    
+                    round_matches.extend(pairings)
             
             # Simulate matches for this round
             for team1, team2 in round_matches:

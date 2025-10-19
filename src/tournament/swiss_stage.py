@@ -17,6 +17,7 @@ class SwissTournament:
         self.records = {t: [0, 0] for t in teams}  # wins, losses
         self.round_results = []  # Track detailed round results
         self.current_round = 0
+        self.match_history = set()  # Track all matchups to avoid rematches
 
     def match(self, team_a, team_b):
         """Simulate a single map between team_a and team_b."""
@@ -91,6 +92,9 @@ class SwissTournament:
         round_matches = []
         
         for a, b in pairs:
+            # Record this matchup in history
+            matchup = tuple(sorted([a, b]))
+            self.match_history.add(matchup)
             # Get records before match
             a_record_before = f"{self.records[a][0]}-{self.records[a][1]}"
             b_record_before = f"{self.records[b][0]}-{self.records[b][1]}"
@@ -142,6 +146,9 @@ class SwissTournament:
         round_matches = []
         
         for a, b, best_of in matches_with_format:
+            # Record this matchup in history
+            matchup = tuple(sorted([a, b]))
+            self.match_history.add(matchup)
             # Get records before match
             a_record_before = f"{self.records[a][0]}-{self.records[a][1]}"
             b_record_before = f"{self.records[b][0]}-{self.records[b][1]}"
@@ -246,7 +253,7 @@ class SwissTournament:
         self.play_round(pairs, best_of=1, round_name="Opening Round")
 
     def swiss_round(self):
-        """Subsequent Swiss rounds: group by record, pair within groups."""
+        """Subsequent Swiss rounds: group by record, pair within groups, avoiding rematches."""
         groups = {}
         for t, (w, l) in self.records.items():
             if w < 3 and l < 3:  # still alive
@@ -259,15 +266,46 @@ class SwissTournament:
         for group, tlist in groups.items():
             w, l = group
             random.shuffle(tlist)
-            for i in range(0, len(tlist), 2):
-                if i + 1 < len(tlist):
-                    a, b = tlist[i], tlist[i+1]
-                    # Decider matches (at 2–x) can be BO3
-                    if w == 2 or l == 2:
-                        all_matches.append((a, b, 3))  # BO3
-                        has_elimination = True
-                    else:
-                        all_matches.append((a, b, 1))  # BO1
+            
+            # Use pairing algorithm that avoids rematches
+            paired = set()
+            pairings = []
+            
+            for i, team_a in enumerate(tlist):
+                if team_a in paired:
+                    continue
+                    
+                # Try to find a valid opponent (not played before)
+                for j in range(i + 1, len(tlist)):
+                    team_b = tlist[j]
+                    if team_b in paired:
+                        continue
+                    
+                    matchup = tuple(sorted([team_a, team_b]))
+                    if matchup not in self.match_history:
+                        # Valid pairing found
+                        pairings.append((team_a, team_b))
+                        paired.add(team_a)
+                        paired.add(team_b)
+                        break
+                else:
+                    # No valid opponent found without rematch, pair with anyone remaining
+                    for j in range(i + 1, len(tlist)):
+                        team_b = tlist[j]
+                        if team_b not in paired:
+                            pairings.append((team_a, team_b))
+                            paired.add(team_a)
+                            paired.add(team_b)
+                            break
+            
+            # Add pairings with appropriate format
+            for a, b in pairings:
+                # Decider matches (at 2–x) can be BO3
+                if w == 2 or l == 2:
+                    all_matches.append((a, b, 3))  # BO3
+                    has_elimination = True
+                else:
+                    all_matches.append((a, b, 1))  # BO1
         
         # Play ALL matches in ONE single round (proper Swiss system)
         if all_matches:
