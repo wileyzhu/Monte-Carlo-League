@@ -551,13 +551,14 @@ class WorldsTournament:
             'swiss_eliminated': eliminated
         }
     
-    def _continue_swiss_from_records(self, swiss_teams, current_records):
+    def _continue_swiss_from_records(self, swiss_teams, current_records, existing_match_history=None):
         """Continue Swiss stage from current team records using manual simulation"""
         # Make a copy of current records to work with
         records = {team: record.copy() for team, record in current_records.items()}
         
         # Track match history to avoid rematches
-        match_history = set()
+        # Use existing history if provided, otherwise start fresh
+        match_history = set(existing_match_history) if existing_match_history else set()
         
         # Determine what round we're starting from based on records
         # Check if we have mixed game counts (indicates partial round completion)

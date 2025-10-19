@@ -486,31 +486,67 @@ def simulate_swiss_stage():
             analysis_type = data.get('analysis_type', 'qualification')
             
             if analysis_type == 'championship':
-                # Use proper WorldsTournament for championship analysis FROM ROUND 2 STATE
-                # State BEFORE Round 3 (after Round 2 completed) - predict Round 3 outcomes
+                # Use proper WorldsTournament for championship analysis with PARTIAL ROUND 3 results
+                # Partial Round 3 results (some matches completed)
                 round2_records = {
-                    # 2-0 teams (after Round 2)
-                    'KT Rolster': [2, 0],           # Round 1: W, Round 2: W (beat TSW)
-                    'Top Esports': [2, 0],          # Round 1: W, Round 2: W (beat 100)
-                    'CTBC Flying Oyster': [2, 0],   # Round 1: W, Round 2: W (beat T1)
-                    'Anyone s Legend': [2, 0],      # Round 1: W, Round 2: W (beat GEN)
+                    # 3-0 teams (completed Round 3 with win)
+                    'KT Rolster': [3, 0],           # Round 3: W (beat TES)
+                    'Anyone s Legend': [3, 0],      # Round 3: W (beat CFO)
                     
-                    # 1-1 teams (after Round 2)
-                    'Team Secret Whales': [1, 1],   # Round 1: W, Round 2: L (lost to KT)
-                    'FlyQuest': [1, 1],             # Round 1: L, Round 2: W (beat VKS)
-                    'Gen.G eSports': [1, 1],        # Round 1: W, Round 2: L (lost to AL)
-                    'T1': [1, 1],                   # Round 1: W, Round 2: L (lost to CFO)
-                    'G2 Esports': [1, 1],           # Round 1: L, Round 2: W (beat KOI)
-                    'Bilibili Gaming': [1, 1],      # Round 1: L, Round 2: W (beat FNC)
-                    '100 Thieves': [1, 1],          # Round 1: W, Round 2: L (lost to TES)
-                    'Hanwha Life eSports': [1, 1],  # Round 1: L, Round 2: W (beat PSG)
+                    # 2-1 teams (completed Round 3 with loss from 2-0)
+                    'Top Esports': [2, 1],          # Round 3: L (lost to KT)
+                    'CTBC Flying Oyster': [2, 1],   # Round 3: L (lost to AL)
                     
-                    # 0-2 teams (after Round 2)
-                    'Movistar KOI': [0, 2],         # Round 1: L, Round 2: L (lost to G2)
-                    'Fnatic': [0, 2],               # Round 1: L, Round 2: L (lost to BLG)
-                    'Vivo Keyd Stars': [0, 2],      # Round 1: L, Round 2: L (lost to FLY)
-                    'PSG Talon': [0, 2]             # Round 1: L, Round 2: L (lost to HLE)
+                    # 2-1 teams (completed Round 3 with win from 1-1)
+                    'FlyQuest': [2, 1],             # Round 3: W (beat TSW)
+                    'Gen.G eSports': [2, 1],        # Round 3: W (beat T1)
+                    'G2 Esports': [2, 1],           # Round 3: W (beat BLG)
+                    'Hanwha Life eSports': [2, 1],  # Round 3: W (beat 100)
+                    
+                    # 1-2 teams (completed Round 3 with loss from 1-1)
+                    'Team Secret Whales': [1, 2],   # Round 3: L (lost to FLY)
+                    'T1': [1, 2],                   # Round 3: L (lost to GEN)
+                    'Bilibili Gaming': [1, 2],      # Round 3: L (lost to G2)
+                    '100 Thieves': [1, 2],          # Round 3: L (lost to HLE)
+                    
+                    # 0-2 teams (haven't played Round 3 yet - partial results)
+                    'Movistar KOI': [0, 2],         # Round 3: Not played yet
+                    'Fnatic': [0, 2],               # Round 3: Not played yet
+                    'Vivo Keyd Stars': [0, 2],      # Round 3: Not played yet
+                    'PSG Talon': [0, 2]             # Round 3: Not played yet
                 }
+                
+                # Match history from Rounds 1-3 (all matches played so far)
+                match_history = [
+                    # Round 1 matches
+                    ('Team Secret Whales', 'Vivo Keyd Stars'),
+                    ('CTBC Flying Oyster', 'Fnatic'),
+                    ('KT Rolster', 'Movistar KOI'),
+                    ('100 Thieves', 'Bilibili Gaming'),
+                    ('T1', 'FlyQuest'),
+                    ('Anyone s Legend', 'Hanwha Life eSports'),
+                    ('Top Esports', 'G2 Esports'),
+                    ('Gen.G eSports', 'PSG Talon'),
+                    
+                    # Round 2 matches
+                    ('KT Rolster', 'Team Secret Whales'),
+                    ('Top Esports', '100 Thieves'),
+                    ('CTBC Flying Oyster', 'T1'),
+                    ('Gen.G eSports', 'Anyone s Legend'),
+                    ('FlyQuest', 'Vivo Keyd Stars'),
+                    ('G2 Esports', 'Movistar KOI'),
+                    ('Bilibili Gaming', 'Fnatic'),
+                    ('Hanwha Life eSports', 'PSG Talon'),
+                    
+                    # Round 3 matches (partial - only completed matches)
+                    ('KT Rolster', 'Top Esports'),
+                    ('CTBC Flying Oyster', 'Anyone s Legend'),
+                    ('Team Secret Whales', 'FlyQuest'),
+                    ('Gen.G eSports', 'T1'),
+                    ('G2 Esports', 'Bilibili Gaming'),
+                    ('100 Thieves', 'Hanwha Life eSports')
+                    # Note: KOI vs FNC and VKS vs PSG haven't been played yet
+                ]
                 
                 # Create the real results state for simulate_from_real_results
                 real_results_state = {
@@ -518,7 +554,8 @@ def simulate_swiss_stage():
                     'playin_winner': playin_winner,
                     'swiss_completed': False,
                     'swiss_current_records': round2_records,
-                    'swiss_round': 3,  # Starting from Round 3 (Round 2 completed)
+                    'swiss_match_history': match_history,
+                    'swiss_round': 3,  # Currently in Round 3 (partial)
                     'elimination_completed': False
                 }
                 
@@ -545,30 +582,66 @@ def simulate_swiss_stage():
             
             else:
                 # For other analysis types, use the existing Swiss simulation logic
-                # State BEFORE Round 3 (after Round 2 completed) - predict Round 3 outcomes
+                # Partial Round 3 results (some matches completed)
                 round2_records = {
-                    # 2-0 teams (after Round 2)
-                    'KT Rolster': [2, 0],           # Round 1: W, Round 2: W (beat TSW)
-                    'Top Esports': [2, 0],          # Round 1: W, Round 2: W (beat 100)
-                    'CTBC Flying Oyster': [2, 0],   # Round 1: W, Round 2: W (beat T1)
-                    'Anyone s Legend': [2, 0],      # Round 1: W, Round 2: W (beat GEN)
+                    # 3-0 teams (completed Round 3 with win)
+                    'KT Rolster': [3, 0],           # Round 3: W (beat TES)
+                    'Anyone s Legend': [3, 0],      # Round 3: W (beat CFO)
                     
-                    # 1-1 teams (after Round 2)
-                    'Team Secret Whales': [1, 1],   # Round 1: W, Round 2: L (lost to KT)
-                    'FlyQuest': [1, 1],             # Round 1: L, Round 2: W (beat VKS)
-                    'Gen.G eSports': [1, 1],        # Round 1: W, Round 2: L (lost to AL)
-                    'T1': [1, 1],                   # Round 1: W, Round 2: L (lost to CFO)
-                    'G2 Esports': [1, 1],           # Round 1: L, Round 2: W (beat KOI)
-                    'Bilibili Gaming': [1, 1],      # Round 1: L, Round 2: W (beat FNC)
-                    '100 Thieves': [1, 1],          # Round 1: W, Round 2: L (lost to TES)
-                    'Hanwha Life eSports': [1, 1],  # Round 1: L, Round 2: W (beat PSG)
+                    # 2-1 teams (completed Round 3 with loss from 2-0)
+                    'Top Esports': [2, 1],          # Round 3: L (lost to KT)
+                    'CTBC Flying Oyster': [2, 1],   # Round 3: L (lost to AL)
                     
-                    # 0-2 teams (after Round 2)
-                    'Movistar KOI': [0, 2],         # Round 1: L, Round 2: L (lost to G2)
-                    'Fnatic': [0, 2],               # Round 1: L, Round 2: L (lost to BLG)
-                    'Vivo Keyd Stars': [0, 2],      # Round 1: L, Round 2: L (lost to FLY)
-                    'PSG Talon': [0, 2]             # Round 1: L, Round 2: L (lost to HLE)
+                    # 2-1 teams (completed Round 3 with win from 1-1)
+                    'FlyQuest': [2, 1],             # Round 3: W (beat TSW)
+                    'Gen.G eSports': [2, 1],        # Round 3: W (beat T1)
+                    'G2 Esports': [2, 1],           # Round 3: W (beat BLG)
+                    'Hanwha Life eSports': [2, 1],  # Round 3: W (beat 100)
+                    
+                    # 1-2 teams (completed Round 3 with loss from 1-1)
+                    'Team Secret Whales': [1, 2],   # Round 3: L (lost to FLY)
+                    'T1': [1, 2],                   # Round 3: L (lost to GEN)
+                    'Bilibili Gaming': [1, 2],      # Round 3: L (lost to G2)
+                    '100 Thieves': [1, 2],          # Round 3: L (lost to HLE)
+                    
+                    # 0-2 teams (haven't played Round 3 yet - partial results)
+                    'Movistar KOI': [0, 2],         # Round 3: Not played yet
+                    'Fnatic': [0, 2],               # Round 3: Not played yet
+                    'Vivo Keyd Stars': [0, 2],      # Round 3: Not played yet
+                    'PSG Talon': [0, 2]             # Round 3: Not played yet
                 }
+                
+                # Match history from Rounds 1-3 (all matches played so far)
+                match_history = set([
+                    # Round 1 matches
+                    tuple(sorted(['Team Secret Whales', 'Vivo Keyd Stars'])),
+                    tuple(sorted(['CTBC Flying Oyster', 'Fnatic'])),
+                    tuple(sorted(['KT Rolster', 'Movistar KOI'])),
+                    tuple(sorted(['100 Thieves', 'Bilibili Gaming'])),
+                    tuple(sorted(['T1', 'FlyQuest'])),
+                    tuple(sorted(['Anyone s Legend', 'Hanwha Life eSports'])),
+                    tuple(sorted(['Top Esports', 'G2 Esports'])),
+                    tuple(sorted(['Gen.G eSports', 'PSG Talon'])),
+                    
+                    # Round 2 matches
+                    tuple(sorted(['KT Rolster', 'Team Secret Whales'])),
+                    tuple(sorted(['Top Esports', '100 Thieves'])),
+                    tuple(sorted(['CTBC Flying Oyster', 'T1'])),
+                    tuple(sorted(['Gen.G eSports', 'Anyone s Legend'])),
+                    tuple(sorted(['FlyQuest', 'Vivo Keyd Stars'])),
+                    tuple(sorted(['G2 Esports', 'Movistar KOI'])),
+                    tuple(sorted(['Bilibili Gaming', 'Fnatic'])),
+                    tuple(sorted(['Hanwha Life eSports', 'PSG Talon'])),
+                    
+                    # Round 3 matches (partial - only completed matches)
+                    tuple(sorted(['KT Rolster', 'Top Esports'])),
+                    tuple(sorted(['CTBC Flying Oyster', 'Anyone s Legend'])),
+                    tuple(sorted(['Team Secret Whales', 'FlyQuest'])),
+                    tuple(sorted(['Gen.G eSports', 'T1'])),
+                    tuple(sorted(['G2 Esports', 'Bilibili Gaming'])),
+                    tuple(sorted(['100 Thieves', 'Hanwha Life eSports']))
+                    # Note: KOI vs FNC and VKS vs PSG haven't been played yet
+                ])
                 
                 swiss_teams = list(round2_records.keys())
                 
@@ -582,14 +655,6 @@ def simulate_swiss_stage():
                     
                     # ROUND 3: Use ACTUAL matchup draws (not random pairing)
                     round3_matches = [
-                        # High (2-0 vs 2-0) - BO3
-                        ('KT Rolster', 'Top Esports'),
-                        ('CTBC Flying Oyster', 'Anyone s Legend'),
-                        # Middle (1-1 vs 1-1) - BO1
-                        ('Team Secret Whales', 'FlyQuest'),
-                        ('Gen.G eSports', 'T1'),
-                        ('G2 Esports', 'Bilibili Gaming'),
-                        ('100 Thieves', 'Hanwha Life eSports'),
                         # Low (0-2 vs 0-2) - BO3
                         ('Movistar KOI', 'Fnatic'),
                         ('Vivo Keyd Stars', 'PSG Talon')
