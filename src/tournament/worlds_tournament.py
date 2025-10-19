@@ -560,11 +560,31 @@ class WorldsTournament:
         match_history = set()
         
         # Determine what round we're starting from based on records
-        # If we have teams at 2-0, 1-1, 0-2, we're starting Round 3
-        has_2_0 = any(wins == 2 and losses == 0 for wins, losses in records.values())
-        starting_round = 3 if has_2_0 else 2
+        # Check if we have mixed game counts (indicates partial round completion)
+        game_counts = [wins + losses for wins, losses in records.values()]
+        max_games = max(game_counts)
+        min_games = min(game_counts)
+        
+        # If teams have different game counts, we're in the middle of a round
+        if max_games != min_games:
+            # Continue from the current round (some teams haven't played yet)
+            starting_round = max_games  # This is the round number we're in
+        elif max_games >= 3:
+            starting_round = 4  # Round 4 or later (all teams have played 3+ games)
+        elif max_games >= 2:
+            starting_round = 3  # Round 3 (all teams have played 2 games)
+        else:
+            starting_round = 2  # Round 2 (all teams have played 0-1 games)
         
         round_num = starting_round
+        
+        # If we're in a partial round, identify which teams have already played
+        teams_played_this_round = set()
+        if max_games != min_games:
+            # Teams with max_games have played, teams with min_games haven't
+            for team, (wins, losses) in records.items():
+                if wins + losses == max_games:
+                    teams_played_this_round.add(team)
         
         while not all(wins >= 3 or losses >= 3 for wins, losses in records.values()):
             # Special handling for Round 3 - use ACTUAL draws
@@ -587,12 +607,22 @@ class WorldsTournament:
                     ('Vivo Keyd Stars', 'PSG Talon')
                 ]
                 
-                round_matches = high_matches_bo3 + other_matches_bo1
+                all_round3_matches = high_matches_bo3 + other_matches_bo1
                 
-                # Add these matches to history
-                for team1, team2 in round_matches:
-                    matchup = tuple(sorted([team1, team2]))
-                    match_history.add(matchup)
+                # Filter out matches where both teams have already played
+                round_matches = []
+                for team1, team2 in all_round3_matches:
+                    if team1 not in teams_played_this_round or team2 not in teams_played_this_round:
+                        round_matches.append((team1, team2))
+                        matchup = tuple(sorted([team1, team2]))
+                        match_history.add(matchup)
+                
+                # If all matches already played, skip to next round
+                if not round_matches:
+                    round_num += 1
+                    teams_played_this_round.clear()
+                    continue
+                
             else:
                 # For other rounds, use standard Swiss pairing with rematch avoidance
                 teams_by_record = {}
