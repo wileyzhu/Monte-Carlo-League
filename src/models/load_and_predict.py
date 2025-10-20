@@ -5,9 +5,19 @@ Loads datasets, applies preprocessing, loads trained models, and generates predi
 
 import pandas as pd
 import numpy as np
+import sys
 from pathlib import Path
-from ..data import data_preprocessing
-from . import state_space
+
+# Handle imports for both direct execution and module import
+try:
+    from ..data import data_preprocessing
+    from . import state_space
+except ImportError:
+    # If relative imports fail, add parent directory to path
+    import os
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+    from src.data import data_preprocessing
+    from src.models import state_space
 
 # Import dependencies with availability checks
 try:
@@ -194,19 +204,30 @@ def generate_team_performance_scores(df):
 
 
 
-def run_autoregressive_model(df_with_predictions, worlds_teams):
-    """Run the autoregressive model on team performance data"""
-    print("Running autoregressive team performance model...")
+def run_autoregressive_model(df_with_predictions, worlds_teams, model_type='bayesian'):
+    """
+    Run time series model on team performance data.
     
-    # Create and fit the autoregressive model
+    Args:
+        df_with_predictions: DataFrame with player predictions
+        worlds_teams: List of team names
+        model_type: Type of model to use ('bayesian' or 'kalman_filter')
+    
+    Returns:
+        tuple: (fitted_model, summary_dataframe)
+    """
+    model_name = 'Bayesian AR(3)' if model_type == 'bayesian' else 'Kalman Filter'
+    print(f"Running {model_name} team performance model...")
+    
+    # Create and fit the model
     ar_model = state_space.TeamAutoregressiveModel(worlds_teams=worlds_teams)
     
     # Prepare team-level data from individual player predictions
     team_data = ar_model.prepare_team_data(df_with_predictions)
     print(f"Prepared team data: {len(team_data)} team-game records")
     
-    # Fit autoregressive models for each team
-    ar_model.fit()
+    # Fit models for each team with specified model type
+    ar_model.fit(model_type=model_type)
     
     # Get model summary
     summary = ar_model.get_team_summary()
@@ -261,8 +282,18 @@ def filter_worlds_teams(df, worlds_teams):
     
     return df_worlds
 
-def main():
-    """Main pipeline: load data, preprocess, load models, and generate predictions"""
+def main(model_type='bayesian'):
+    """
+    Main pipeline: load data, preprocess, load models, and generate predictions.
+    
+    Args:
+        model_type: Type of time series model to use
+            - 'bayesian': Bayesian AR(3) model (default)
+            - 'kalman_filter': Kalman Filter for state tracking
+    
+    Returns:
+        tuple: (df_with_predictions, team_scores, ar_model, ar_summary)
+    """
     # Load and combine datasets
     print("Loading datasets...")
     df = load_datasets()
@@ -326,13 +357,18 @@ def main():
     accuracy = (team_scores['Predicted_Winner'] == team_scores['Actual_Winner']).mean()
     print(f"\nTeam prediction accuracy: {accuracy:.3f}")
     
-    # Run autoregressive model
+    # Run time series model
     print("\n" + "="*50)
-    print("RUNNING AUTOREGRESSIVE TEAM PERFORMANCE MODEL")
+    model_name = 'BAYESIAN AR(3)' if model_type == 'bayesian' else 'KALMAN FILTER'
+    print(f"RUNNING {model_name} TEAM PERFORMANCE MODEL")
     print("="*50)
     
     try:
-        ar_model, ar_summary = run_autoregressive_model(df_with_predictions, worlds_teams=worlds_teams)
+        ar_model, ar_summary = run_autoregressive_model(
+            df_with_predictions, 
+            worlds_teams=worlds_teams,
+            model_type=model_type
+        )
         print("\nAutoregressive model completed successfully!")
         
         # Save autoregressive results
@@ -348,13 +384,25 @@ def main():
         return df_with_predictions, team_scores, None, None
 
 if __name__ == "__main__":
-    results = main()
+    # Check for command-line argument for model type
+    model_type = 'bayesian'  # default
+    if len(sys.argv) > 1:
+        if sys.argv[1] in ['bayesian', 'kalman_filter']:
+            model_type = sys.argv[1]
+            print(f"Using model type: {model_type}")
+        else:
+            print(f"Invalid model type: {sys.argv[1]}")
+            print("Valid options: 'bayesian' or 'kalman_filter'")
+            print("Using default: bayesian")
+    
+    results = main(model_type=model_type)
     if len(results) == 4:
         df_final, team_scores, ar_model, ar_summary = results
-        print(f"\nCompleted with autoregressive model: {ar_model is not None}")
+        print(f"\nCompleted with time series model: {ar_model is not None}")
         if ar_model is not None:
             print(f"Fitted models for {len(ar_model.team_models)} teams")
+            print(f"Model type used: {ar_model.model_type}")
     else:
         df_final, team_scores = results
-        print("\nCompleted without autoregressive model")
+        print("\nCompleted without time series model")
 

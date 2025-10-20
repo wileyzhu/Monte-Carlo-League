@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pymc as pm
 import arviz as az
+from pykalman import KalmanFilter
 from sklearn.preprocessing import StandardScaler
 
 import warnings
@@ -164,14 +165,96 @@ class TeamAutoregressiveModel:
             pm.sample_posterior_predictive(idata_ar, extend_inferencedata=True, random_seed=42)
 
         return AR, idata_ar
-    def fit(self):
+        
+    def kalman_filters(self, data, obs_noise_multiplier=2.0, transition_ratio=0.01):
         """
-        Fit Bayesian AR(1) models for each team.
+        Apply Kalman Filter to track team performance over time.
+        
+        Args:
+            data: Array of performance observations (0-1 scale)
+            obs_noise_multiplier: Multiplier for observation covariance (default 1.5)
+                Higher = less reactive to individual games (more stable)
+                Lower = more reactive to recent performance (more volatile)
+            transition_ratio: Ratio of transition to observation covariance (default 0.02)
+                Higher = skill can change faster (more reactive)
+                Lower = skill changes slowly (more stable)
+            
+        Returns:
+            tuple: (state_means, state_covariances) - filtered estimates
+            
+        Parameter Selection Guide:
+        - transition_matrices: [1] assumes skill persists (random walk)
+        - observation_matrices: [1] assumes we directly observe skill
+        - initial_state_mean: Start at data mean (average performance)
+        - initial_state_covariance: 0.25 (moderate initial uncertainty)
+        - observation_covariance: data_var * obs_noise_multiplier
+        - transition_covariance: obs_cov * transition_ratio
+        
+        Tuning Tips:
+        - For MORE stability (less reactive): increase obs_noise_multiplier, decrease transition_ratio
+        - For MORE reactivity (track recent changes): decrease obs_noise_multiplier, increase transition_ratio
+        - Recommended stable settings: obs_noise_multiplier=1.5-2.0, transition_ratio=0.01-0.03
+        - Recommended reactive settings: obs_noise_multiplier=1.0, transition_ratio=0.05-0.10
+        """
+        # Calculate data statistics for parameter tuning
+        data_array = np.array(data)
+        data_mean = np.mean(data_array)
+        data_var = np.var(data_array)
+        
+        # Parameter selection based on data characteristics:
+        # 1. Observation covariance: Treat games as noisy measurements
+        #    HIGHER value = trust individual games less, smoother predictions
+        #    We want HIGH observation noise to reduce reactivity to outliers
+        obs_cov = max(data_var * obs_noise_multiplier, 0.1)  # Increased minimum to 0.1
+        
+        # 2. Transition covariance: How much skill can change between games
+        #    LOWER value = skill changes very slowly, more stable
+        #    We want VERY LOW transition noise for stability
+        trans_cov = max(obs_cov * transition_ratio, 0.001)  # Very small, minimum 0.001
+        
+        # 3. Initial state: Use data mean or 0.5 (neutral performance)
+        init_mean = data_mean if not np.isnan(data_mean) else 0.5
+        
+        # 4. Initial covariance: Moderate uncertainty
+        init_cov = 0.1
+        
+        kf = KalmanFilter(
+            transition_matrices=[1],           # State persists (random walk)
+            observation_matrices=[1],          # Direct observation of state
+            initial_state_mean=init_mean,      # Start at data mean
+            initial_state_covariance=init_cov, # Moderate initial uncertainty
+            observation_covariance=obs_cov,    # Measurement noise from data
+            transition_covariance=trans_cov    # Small skill changes (10% of obs noise)
+        )
+        
+        # Use smoothing instead of filtering for better estimates
+        # Smoothing uses all data (past and future) to estimate each state
+        # This reduces reactivity to outliers and gives more stable predictions
+        state_means_smooth, state_covariances_smooth = kf.smooth(data_array)
+        
+        return state_means_smooth, state_covariances_smooth
+
+    def fit(self, model_type='bayesian'):
+        """
+        Fit time series models for each team.
+        
+        Args:
+            model_type: Type of model to fit
+                - 'bayesian': Bayesian AR(3) model (default)
+                - 'kalman_filter': Kalman Filter for state tracking
         """
         if self.team_data is None:
             raise ValueError("No team data available. Call prepare_team_data() first.")
-            
-        print("Fitting Bayesian AR(1) models for each team...")
+        
+        # Store the model type
+        self.model_type = model_type
+        
+        if model_type == 'bayesian':
+            print("Fitting Bayesian AR(3) models for each team...")
+        elif model_type == 'kalman_filter':
+            print("Fitting Kalman Filter models for each team...")
+        else:
+            raise ValueError(f"Unknown model type: {model_type}. Use 'bayesian' or 'kalman_filter'.")
         
         # Group by team and sort by game chronologically
         for team in self.worlds_teams:
@@ -188,15 +271,32 @@ class TeamAutoregressiveModel:
                     data_std = np.std(performance_history)
                     
                     
+                    if model_type == 'bayesian':
+                        # Fit Bayesian AR(3) model
+                        model_name, idata = self.create_autoregressive_features(performance_history, p=3)
+                        
+                        # Store model and inference data
+                        self.team_models[team] = {
+                            'model_type': 'bayesian',
+                            'model': model_name,
+                            'idata': idata
+                        }
+                        self.team_histories[team] = performance_history
+                        
+                        print(f"  Fitted Bayesian AR(3) for {team}: {len(performance_history)} games")
                     
-                    # Fit Bayesian AR(1) model
-                    model, idata = self.create_autoregressive_features(performance_history, p=3)
-                    
-                    # Store model and inference data
-                    self.team_models[team] = {'model': model, 'idata': idata}
-                    self.team_histories[team] = performance_history
-                    
-                    print(f"  Fitted Bayesian AR(1) for {team}: {len(performance_history)} games")
+                    elif model_type == 'kalman_filter':
+                        # Fit Kalman Filter
+                        state_means, state_covs = self.kalman_filters(performance_history)
+                        
+                        self.team_models[team] = {
+                            'model_type': 'kalman_filter',
+                            'state_means': state_means,
+                            'state_covariances': state_covs
+                        }
+                        self.team_histories[team] = performance_history
+                        
+                        print(f"  Fitted Kalman Filter for {team}: {len(performance_history)} games")
                     
                 except Exception as e:
                     print(f"  Failed to fit model for {team}: {str(e)}")
@@ -204,7 +304,8 @@ class TeamAutoregressiveModel:
                 print(f"  Insufficient games for {team}: {len(performance_history)} games")
         
         self.fitted = True
-        print(f"Fitted Bayesian models for {len(self.team_models)} teams")
+        model_name = 'Bayesian AR(3)' if model_type == 'bayesian' else 'Kalman Filter'
+        print(f"Fitted {model_name} models for {len(self.team_models)} teams")
 
     def predict_team_performance(self, team, recent_performances=None, n_samples=100):
         """
@@ -252,17 +353,36 @@ class TeamAutoregressiveModel:
             }
         
         try:
-            # Get model and inference data
+            # Get model data
             model_data = self.team_models[team]
-            model = model_data['model']
-            idata = model_data['idata']
+            model_type = model_data.get('model_type', 'bayesian')
             
-            # Use PyMC's standard posterior predictive sampling
-            with model:
-                ppc = pm.sample_posterior_predictive(idata)
+            if model_type == 'kalman_filter':
+                # For Kalman Filter, use the last filtered state as prediction
+                state_means = model_data['state_means']
+                state_covs = model_data['state_covariances']
+                
+                # Last state is the best prediction
+                mean_pred = state_means[-1][0]
+                std_pred = np.sqrt(state_covs[-1][0, 0])
+                
+                return {
+                    'mean': np.clip(mean_pred, 0.0, 1.0),
+                    'std': std_pred,
+                    'lower_95': np.clip(mean_pred - 1.96 * std_pred, 0.0, 1.0),
+                    'upper_95': np.clip(mean_pred + 1.96 * std_pred, 0.0, 1.0)
+                }
             
-            # Extract predictions from the likelihood
-            predictions = ppc.posterior_predictive['likelihood'].values.flatten()
+            else:  # Bayesian model
+                model = model_data['model']
+                idata = model_data['idata']
+                
+                # Use PyMC's standard posterior predictive sampling
+                with model:
+                    ppc = pm.sample_posterior_predictive(idata)
+                
+                # Extract predictions from the likelihood
+                predictions = ppc.posterior_predictive['likelihood'].values.flatten()
             
             # Calculate statistics
             mean_pred = np.mean(predictions)
@@ -336,7 +456,7 @@ class TeamAutoregressiveModel:
 
     def get_team_summary(self):
         """
-        Get summary of fitted Bayesian models.
+        Get summary of fitted time series models.
         
         Returns:
             DataFrame with team model summaries
@@ -347,77 +467,105 @@ class TeamAutoregressiveModel:
         summaries = []
         for team in self.team_models.keys():
             model_data = self.team_models[team]
-            idata = model_data['idata']
+            model_type = model_data.get('model_type', 'bayesian')
             history = self.team_histories[team]
             
-            # Extract posterior statistics for AR(3) model
+            # Get predicted mean for next performance
             try:
-                coef_summary = az.summary(idata, var_names=['coefs'])
-                sigma_mean = az.summary(idata, var_names=['sigma'])['mean'].iloc[0]
+                team_pred = self.predict_team_performance(team)
+                predicted_mean = team_pred['mean']
+                predicted_std = team_pred['std']
+                predicted_lower = team_pred['lower_95']
+                predicted_upper = team_pred['upper_95']
+            except:
+                # Fallback if prediction fails
+                predicted_mean = np.mean(history)
+                predicted_std = np.std(history)
+                predicted_lower = predicted_mean - 1.96 * predicted_std
+                predicted_upper = predicted_mean + 1.96 * predicted_std
+            
+            if model_type == 'kalman_filter':
+                # For Kalman Filter, extract state statistics
+                state_means = model_data['state_means']
+                state_covs = model_data['state_covariances']
                 
-                # Extract all AR(3) coefficients: [constant, φ₁, φ₂, φ₃]
-                constant_mean = coef_summary['mean'].iloc[0]  # Constant term
-                ar1_coef_mean = coef_summary['mean'].iloc[1]  # AR lag 1 coefficient
-                ar2_coef_mean = coef_summary['mean'].iloc[2]  # AR lag 2 coefficient  
-                ar3_coef_mean = coef_summary['mean'].iloc[3]  # AR lag 3 coefficient
-                
-                constant_std = coef_summary['sd'].iloc[0]
-                ar1_coef_std = coef_summary['sd'].iloc[1]
-                ar2_coef_std = coef_summary['sd'].iloc[2]
-                ar3_coef_std = coef_summary['sd'].iloc[3]
-                
-                # Get predicted mean for next performance
-                try:
-                    team_pred = self.predict_team_performance(team)
-                    predicted_mean = team_pred['mean']
-                    predicted_std = team_pred['std']
-                    predicted_lower = team_pred['lower_95']
-                    predicted_upper = team_pred['upper_95']
-                except:
-                    # Fallback if prediction fails
-                    predicted_mean = np.mean(history)
-                    predicted_std = np.std(history)
-                    predicted_lower = predicted_mean - 1.96 * predicted_std
-                    predicted_upper = predicted_mean + 1.96 * predicted_std
+                # Get final state estimate
+                final_state_mean = state_means[-1][0]
+                final_state_std = np.sqrt(state_covs[-1][0, 0])
                 
                 summaries.append({
                     'Team': team,
+                    'Model_Type': 'Kalman Filter',
                     'Games_Played': len(history),
                     'Avg_Performance': np.mean(history),
                     'Performance_Std': np.std(history),
-                    'Constant_Mean': constant_mean,
-                    'Constant_Std': constant_std,
-                    'AR1_Coef_Mean': ar1_coef_mean,
-                    'AR1_Coef_Std': ar1_coef_std,
-                    'AR2_Coef_Mean': ar2_coef_mean,
-                    'AR2_Coef_Std': ar2_coef_std,
-                    'AR3_Coef_Mean': ar3_coef_mean,
-                    'AR3_Coef_Std': ar3_coef_std,
-                    'Noise_Sigma': sigma_mean,
+                    'Final_State_Mean': final_state_mean,
+                    'Final_State_Std': final_state_std,
                     'Predicted_Mean': predicted_mean,
                     'Predicted_Std': predicted_std,
                     'Predicted_Lower_95': predicted_lower,
                     'Predicted_Upper_95': predicted_upper
                 })
-            except Exception as e:
-                summaries.append({
-                    'Team': team,
-                    'Games_Played': len(history),
-                    'Avg_Performance': np.mean(history),
-                    'Performance_Std': np.std(history),
-                    'Constant_Mean': np.nan,
-                    'Constant_Std': np.nan,
-                    'AR1_Coef_Mean': np.nan,
-                    'AR1_Coef_Std': np.nan,
-                    'AR2_Coef_Mean': np.nan,
-                    'AR2_Coef_Std': np.nan,
-                    'AR3_Coef_Mean': np.nan,
-                    'AR3_Coef_Std': np.nan,
-                    'Noise_Sigma': np.nan,
-                    'Predicted_Mean': np.mean(history),
-                    'Predicted_Std': np.std(history),
-                    'Predicted_Lower_95': np.nan,
-                    'Predicted_Upper_95': np.nan
-                })
+                
+            else:  # Bayesian model
+                idata = model_data['idata']
+                
+                # Extract posterior statistics for AR(3) model
+                try:
+                    coef_summary = az.summary(idata, var_names=['coefs'])
+                    sigma_mean = az.summary(idata, var_names=['sigma'])['mean'].iloc[0]
+                    
+                    # Extract all AR(3) coefficients: [constant, φ₁, φ₂, φ₃]
+                    constant_mean = coef_summary['mean'].iloc[0]  # Constant term
+                    ar1_coef_mean = coef_summary['mean'].iloc[1]  # AR lag 1 coefficient
+                    ar2_coef_mean = coef_summary['mean'].iloc[2]  # AR lag 2 coefficient  
+                    ar3_coef_mean = coef_summary['mean'].iloc[3]  # AR lag 3 coefficient
+                    
+                    constant_std = coef_summary['sd'].iloc[0]
+                    ar1_coef_std = coef_summary['sd'].iloc[1]
+                    ar2_coef_std = coef_summary['sd'].iloc[2]
+                    ar3_coef_std = coef_summary['sd'].iloc[3]
+                    
+                    summaries.append({
+                        'Team': team,
+                        'Model_Type': 'Bayesian AR(3)',
+                        'Games_Played': len(history),
+                        'Avg_Performance': np.mean(history),
+                        'Performance_Std': np.std(history),
+                        'Constant_Mean': constant_mean,
+                        'Constant_Std': constant_std,
+                        'AR1_Coef_Mean': ar1_coef_mean,
+                        'AR1_Coef_Std': ar1_coef_std,
+                        'AR2_Coef_Mean': ar2_coef_mean,
+                        'AR2_Coef_Std': ar2_coef_std,
+                        'AR3_Coef_Mean': ar3_coef_mean,
+                        'AR3_Coef_Std': ar3_coef_std,
+                        'Noise_Sigma': sigma_mean,
+                        'Predicted_Mean': predicted_mean,
+                    'Predicted_Std': predicted_std,
+                    'Predicted_Lower_95': predicted_lower,
+                        'Predicted_Upper_95': predicted_upper
+                    })
+                except Exception as e:
+                    summaries.append({
+                        'Team': team,
+                        'Model_Type': 'Bayesian AR(3)',
+                        'Games_Played': len(history),
+                        'Avg_Performance': np.mean(history),
+                        'Performance_Std': np.std(history),
+                        'Constant_Mean': np.nan,
+                        'Constant_Std': np.nan,
+                        'AR1_Coef_Mean': np.nan,
+                        'AR1_Coef_Std': np.nan,
+                        'AR2_Coef_Mean': np.nan,
+                        'AR2_Coef_Std': np.nan,
+                        'AR3_Coef_Mean': np.nan,
+                        'AR3_Coef_Std': np.nan,
+                        'Noise_Sigma': np.nan,
+                        'Predicted_Mean': np.mean(history),
+                        'Predicted_Std': np.std(history),
+                        'Predicted_Lower_95': np.nan,
+                        'Predicted_Upper_95': np.nan
+                    })
         
         return pd.DataFrame(summaries)
